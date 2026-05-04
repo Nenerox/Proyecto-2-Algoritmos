@@ -1,150 +1,148 @@
 package com.proyecto;
 
+import org.neo4j.driver.*;
+
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
-import java.nio.file.Path;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
-import static org.neo4j.configuration.GraphDatabaseSettings.DEFAULT_DATABASE_NAME;
-import org.neo4j.dbms.api.DatabaseManagementService;
-import org.neo4j.dbms.api.DatabaseManagementServiceBuilder;
-import org.neo4j.graphdb.GraphDatabaseService;
-import org.neo4j.graphdb.Transaction;
+import static org.neo4j.driver.Values.parameters;
 
-public class Neo4jManager {
-    private DatabaseManagementService managementService;
-    private GraphDatabaseService graphDb;
-    // Lista de formatos de fecha soportados
+public class Neo4jManager implements AutoCloseable {
+
+    private final Driver driver;
+
+    // Formatos de fecha
     private static final List<DateTimeFormatter> DATE_FORMATS = new ArrayList<>();
-    
-    // Inicializa los formatos de fecha
+
     static {
         DATE_FORMATS.add(DateTimeFormatter.ISO_LOCAL_DATE);
         DATE_FORMATS.add(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
         DATE_FORMATS.add(DateTimeFormatter.ofPattern("dd-MM-yyyy"));
     }
 
-    // Inicia la base de datos Neo4j en la ruta especificada. Si la base de datos no existe, la crea automáticamente
-    public void startDatabase(String dbPath) {
-        managementService = new DatabaseManagementServiceBuilder(Path.of(dbPath)).build();
-        graphDb = managementService.database(DEFAULT_DATABASE_NAME);
-        
-        // cierra la base de datos si el programa termina forzosamente
-        Runtime.getRuntime().addShutdownHook(new Thread(this::stopDatabase));
+    // Constructor
+    public Neo4jManager(String uri, String user, String password) {
+        this.driver = GraphDatabase.driver(uri, AuthTokens.basic(user, password));
     }
 
-    // se usa para poder hacer operaciones sobre el grafo
-    public GraphDatabaseService getGraphDb() {
-        return graphDb;
+    // Cerrar conexión
+    @Override
+    public void close() {
+        driver.close();
     }
 
-    //Importa los datos del archivo CSV a la base de datos Neo4j
-    // Se asume que el archivo CSV tiene una estructura específica y se crean nodos y relaciones
     public void importarDatos(String rutaArchivo) {
-        try (BufferedReader br = new BufferedReader(new FileReader(rutaArchivo))) {
+        try (BufferedReader br = new BufferedReader(new FileReader(rutaArchivo));
+             Session session = driver.session()) {
+
             String linea;
             String[] headers = null;
             int contador = 0;
 
             while ((linea = br.readLine()) != null) {
+
                 if (headers == null) {
-                    // Lee la primera línea como encabezados
                     headers = linea.split(",(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)");
                     continue;
                 }
 
-                // Divide la línea en campos, respetando comas dentro de comillas
                 String[] datos = linea.split(",(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)");
 
                 if (datos.length >= 11) {
-                    // Crea nodos y relaciones para cada registro
-                    crearNodosYRelaciones(headers, datos);
-                    contador++; // AGREGADO - Incrementa el contador si se crea una relación
+                    Map<String, String> fila = mapearDatos(headers, datos);
 
-                    // Muestra progreso cada 100 registros
+                    session.executeWrite(tx -> {
+                        crearNodosYRelaciones(tx, fila);
+                        return null;
+                    });
+
+                    contador++;
+
                     if (contador % 100 == 0) {
                         System.out.println("Importados " + contador + " registros...");
                     }
                 }
             }
 
-            // Mensaje final con total de registros
-            System.out.println("Importación completada. Total de registros importados: " + contador);
+            System.out.println("Importación completada. Total: " + contador);
 
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
-    // Método privado para crear nodos y relaciones en Neo4j
-    private void crearNodosYRelaciones(String[] headers, String[] datos) {
-        // Inicia una transacción
-        try (Transaction tx = graphDb.beginTx()) {
-            // Mapea los headers con los datos
-            Map<String, String> fila = mapearDatos(headers, datos);
-            
-            // Extrae los valores del CSV
-            String trackId = fila.getOrDefault("track_id", "");
-            String trackName = fila.getOrDefault("track_name", "").replaceAll("\"", "");
-            String artist = fila.getOrDefault("track_artist", "").replaceAll("\"", "");
-            String playlistName = fila.getOrDefault("playlist_name", "").replaceAll("\"", "");
-            String genre = fila.getOrDefault("playlist_genre", "").replaceAll("\"", "");
-            String albumName = fila.getOrDefault("track_album_name", "").replaceAll("\"", "");
-            String releaseDate = fila.getOrDefault("track_album_release_date", "");
-            String popularity = fila.getOrDefault("track_popularity", "0");
-            String danceability = fila.getOrDefault("danceability", "0");
-            String energy = fila.getOrDefault("energy", "0");
-            
-            // Verifica que los datos esenciales no estén vacíos
-            if (!trackId.isEmpty() && !artist.isEmpty()) {
-                // Crea nodo Track con propiedades musicales
-                tx.execute("MERGE (t:Track {id: $id, name: $name, popularity: $pop, danceability: $dance, energy: $energy}) SET t.album = $album, t.releaseDate = $releaseDate",
-                    Map.of("id", trackId, "name", trackName, "pop", parseDouble(popularity), 
-                           "dance", parseDouble(danceability), "energy", parseDouble(energy), 
-                           "album", albumName, "releaseDate", parseDate(releaseDate)));
-                
-                // Crea nodo Artist y relación PERFORMED_BY
-                if (!artist.isEmpty()) {
-                    tx.execute("MERGE (a:Artist {name: $name}) WITH a MATCH (t:Track {id: $trackId}) MERGE (t)-[:PERFORMED_BY]->(a)",
-                        Map.of("name", artist, "trackId", trackId));
-                }
-                
-                // Crea nodo Playlist y relación PART_OF
-                if (!playlistName.isEmpty()) {
-                    tx.execute("MERGE (p:Playlist {name: $name}) WITH p MATCH (t:Track {id: $trackId}) MERGE (t)-[:PART_OF]->(p)",
-                        Map.of("name", playlistName, "trackId", trackId));
-                }
-                
-                // Crea nodo Genre y relación HAS_GENRE
-                if (!genre.isEmpty()) {
-                    tx.execute("MERGE (g:Genre {name: $name}) WITH g MATCH (t:Track {id: $trackId}) MERGE (t)-[:HAS_GENRE]->(g)",
-                        Map.of("name", genre, "trackId", trackId));
-                }
-                
-                // Confirma la transacción
-                tx.commit();
+    private void crearNodosYRelaciones(TransactionContext tx, Map<String, String> fila) {
+
+        String trackId = fila.getOrDefault("track_id", "");
+        String trackName = limpiar(fila.get("track_name"));
+        String artist = limpiar(fila.get("track_artist"));
+        String playlistName = limpiar(fila.get("playlist_name"));
+        String genre = limpiar(fila.get("playlist_genre"));
+        String albumName = limpiar(fila.get("track_album_name"));
+        String releaseDate = fila.getOrDefault("track_album_release_date", "");
+        String popularity = fila.getOrDefault("track_popularity", "0");
+        String danceability = fila.getOrDefault("danceability", "0");
+        String energy = fila.getOrDefault("energy", "0");
+
+        if (!trackId.isEmpty() && !artist.isEmpty()) {
+
+            // tracks
+            tx.run(
+                "MERGE (t:Track {id: $id}) " +
+                "SET t.name = $name, t.popularity = $pop, t.danceability = $dance, " +
+                "t.energy = $energy, t.album = $album, t.releaseDate = $releaseDate",
+                parameters(
+                    "id", trackId,
+                    "name", trackName,
+                    "pop", parseDouble(popularity),
+                    "dance", parseDouble(danceability),
+                    "energy", parseDouble(energy),
+                    "album", albumName,
+                    "releaseDate", parseDate(releaseDate)
+                )
+            );
+
+            // artistas
+            if (!artist.isEmpty()) {
+                tx.run(
+                    "MERGE (a:Artist {name: $name}) " +
+                    "WITH a MATCH (t:Track {id: $trackId}) " +
+                    "MERGE (t)-[:PERFORMED_BY]->(a)",
+                    parameters("name", artist, "trackId", trackId)
+                );
             }
-            
-        } catch (Exception e) {
-            // Manejo de errores
-            System.err.println("Error al crear nodos: " + e.getMessage());
+
+            // Playlists
+            if (!playlistName.isEmpty()) {
+                tx.run(
+                    "MERGE (p:Playlist {name: $name}) " +
+                    "WITH p MATCH (t:Track {id: $trackId}) " +
+                    "MERGE (t)-[:PART_OF]->(p)",
+                    parameters("name", playlistName, "trackId", trackId)
+                );
+            }
+
+            // géneros
+            if (!genre.isEmpty()) {
+                tx.run(
+                    "MERGE (g:Genre {name: $name}) " +
+                    "WITH g MATCH (t:Track {id: $trackId}) " +
+                    "MERGE (t)-[:HAS_GENRE]->(g)",
+                    parameters("name", genre, "trackId", trackId)
+                );
+            }
         }
     }
 
-    // Método privado para mapear headers con datos
     private Map<String, String> mapearDatos(String[] headers, String[] datos) {
         Map<String, String> fila = new HashMap<>();
-        // AGREGADO - Calcula el límite mínimo para evitar índices fuera de rango
         int limite = Math.min(headers.length, datos.length);
 
-        // Itera sobre headers y datos
         for (int i = 0; i < limite; i++) {
             fila.put(headers[i].trim(), datos[i].trim());
         }
@@ -152,45 +150,29 @@ public class Neo4jManager {
         return fila;
     }
 
-    // Método privado para convertir String a double
+    private String limpiar(String valor) {
+        return valor == null ? "" : valor.replace("\"", "").trim();
+    }
+
     private double parseDouble(String valor) {
         try {
-            // Elimina comillas y espacios antes de convertir
-            return Double.parseDouble(valor.replace("\"", "").trim());
+            return Double.parseDouble(limpiar(valor));
         } catch (Exception e) {
-            // Si hay error, retorna 0.0
             return 0.0;
         }
     }
 
-    // Método privado para parsear fechas
     private String parseDate(String valor) {
-        // Limpia el valor eliminando comillas y espacios
-        String limpio = valor == null ? "" : valor.replace("\"", "").trim();
-        
-        // Si está vacío, retorna vacío
-        if (limpio.isEmpty()) {
-            return "";
-        }
+        String limpio = limpiar(valor);
 
-        // Intenta parsear con diferentes formatos
+        if (limpio.isEmpty()) return "";
+
         for (DateTimeFormatter formatter : DATE_FORMATS) {
             try {
-                // Si logra parsear, retorna la fecha en formato estándar
                 return LocalDate.parse(limpio, formatter).toString();
-            } catch (DateTimeParseException ignored) {
-                // Continúa con el siguiente formato
-            }
+            } catch (DateTimeParseException ignored) {}
         }
 
-        // Si ningún formato funciona, retorna el valor limpio
         return limpio;
-    }
-
-    // Cierra la base de datos de forma segura
-    public void stopDatabase() {
-        if (managementService != null) {
-            managementService.shutdown();
-        }
     }
 }
