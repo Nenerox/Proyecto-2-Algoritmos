@@ -12,6 +12,8 @@ public class Main {
 
             manager.importarDatos(rutaDatos);
 
+            manager.crearAristasSimilitud();
+
             System.out.println("Base de datos Neo4j iniciada correctamente.");
         } catch (Exception e) {
             System.err.println("Error al iniciar la base de datos Neo4j:");

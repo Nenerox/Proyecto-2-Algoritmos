@@ -193,4 +193,31 @@ public class Neo4jManager {
             managementService.shutdown();
         }
     }
+    public void crearAristasSimilitud() {
+        try (Transaction tx = graphDb.beginTx()) {
+
+            tx.execute("CREATE INDEX track_id IF NOT EXISTS FOR (t:Track) ON (t.id)");
+            tx.execute("CREATE INDEX genre_name IF NOT EXISTS FOR (g:Genre) ON (g.name)");
+
+            tx.execute(
+                "MATCH (g:Genre)<-[:HAS_GENRE]-(t1:Track) " +
+                "MATCH (g)<-[:HAS_GENRE]-(t2:Track) " +
+                "WHERE t1.id < t2.id " +
+                "  AND t1.danceability IS NOT NULL AND t2.danceability IS NOT NULL " +
+                "  AND t1.energy IS NOT NULL AND t2.energy IS NOT NULL " +
+                "  AND t1.popularity IS NOT NULL AND t2.popularity IS NOT NULL " +
+                "WITH t1, t2, " +
+                "     sqrt( " +
+                "       (t1.danceability - t2.danceability)^2 + " +
+                "       (t1.energy - t2.energy)^2 + " +
+                "       ((t1.popularity - t2.popularity)/100.0)^2 " +
+                "     ) AS w " +
+                "WHERE w < 0.25 " +
+                "MERGE (t1)-[r:SIMILAR_TO]->(t2) " +
+                "SET r.weight = w"
+            );
+
+            tx.commit();
+        }
+    }
 }
