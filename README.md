@@ -12,6 +12,7 @@ Contraseña: algoritmos1234
 - En el botón de connect, presionar "Query"
 - Después de esto, correr el main en vs.
 - Luego, en Neo4j desktop, ingresar estos comandos en la parte derecha de la pantalla, a la par de el símbolo "$"
+
 MATCH (n)-[r]->(m)
 
 RETURN n, r, m
