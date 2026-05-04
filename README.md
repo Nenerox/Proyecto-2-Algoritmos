@@ -13,7 +13,9 @@ Contraseña: algoritmos1234
 - Después de esto, correr el main en vs.
 - Luego, en Neo4j desktop, ingresar estos comandos en la parte derecha de la pantalla, a la par de el símbolo "$"
 MATCH (n)-[r]->(m)
+
 RETURN n, r, m
+
 LIMIT 50
 
 Luego de esto, se pueden visualizar los nodos
