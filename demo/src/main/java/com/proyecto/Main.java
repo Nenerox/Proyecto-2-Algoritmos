@@ -8,6 +8,7 @@ public class Main {
             //Inicia la base de datos (no cambiar nada de esta línea, la ruta es relativa al proyecto)
             manager.startDatabase("datos_grafos");
             String rutaDatos = "demo\\src\\main\\java\\com\\proyecto\\spotify_songs.csv";
+            //String rutaPruebas = "demo\\src\\main\\java\\com\\proyecto\\Data_Base_Pruebas.csv";
 
             manager.importarDatos(rutaDatos);
 
