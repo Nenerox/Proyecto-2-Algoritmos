@@ -12,11 +12,15 @@ import java.util.*;
 
 import static org.neo4j.driver.Values.parameters;
 
+/**
+ * Clase que maneja la conexión con Neo4j
+ * realiza operaciones sobre el grafo, crea nodos y relaciones.
+ */
 public class Neo4jManager implements AutoCloseable {
 
     private final Driver driver;
 
-    // Formatos de fecha
+    // Lista de formatos de fecha que se intentan al parsear fechas del CSV
     private static final List<DateTimeFormatter> DATE_FORMATS = new ArrayList<>();
 
     static {
@@ -25,17 +29,30 @@ public class Neo4jManager implements AutoCloseable {
         DATE_FORMATS.add(DateTimeFormatter.ofPattern("dd-MM-yyyy"));
     }
 
-    // Constructor
+    /**
+     * Constructor que inicializa la conexión con Neo4j.
+     * 
+     * @param uri dirección de conexión
+     * @param user usuario de la base de datos
+     * @param password contraseña de la base de datos
+     */
     public Neo4jManager(String uri, String user, String password) {
         this.driver = GraphDatabase.driver(uri, AuthTokens.basic(user, password));
     }
 
-    // Cerrar conexión
+    /**
+     * Cierra la conexión con la base de datos.
+     */
     @Override
     public void close() {
         driver.close();
     }
 
+    /**
+     * Importa los datos desde un archivo CSV y los inserta en Neo4j.
+     * 
+     * @param rutaArchivo ruta del archivo CSV
+     */
     public void importarDatos(String rutaArchivo) {
         try (BufferedReader br = new BufferedReader(new FileReader(rutaArchivo));
              Session session = driver.session()) {
@@ -76,6 +93,9 @@ public class Neo4jManager implements AutoCloseable {
         }
     }
 
+    /**
+     * Crea los nodos y relaciones básicas en el grafo a partir de una fila del CSV.
+     */
     private void crearNodosYRelaciones(TransactionContext tx, Map<String, String> fila) {
 
         String trackId = fila.getOrDefault("track_id", "");
@@ -91,7 +111,7 @@ public class Neo4jManager implements AutoCloseable {
 
         if (!trackId.isEmpty() && !artist.isEmpty()) {
 
-            // tracks
+            // Nodo Track
             tx.run(
                 "MERGE (t:Track {id: $id}) " +
                 "SET t.name = $name, t.popularity = $pop, t.danceability = $dance, " +
@@ -107,17 +127,15 @@ public class Neo4jManager implements AutoCloseable {
                 )
             );
 
-            // artistas
-            if (!artist.isEmpty()) {
-                tx.run(
-                    "MERGE (a:Artist {name: $name}) " +
-                    "WITH a MATCH (t:Track {id: $trackId}) " +
-                    "MERGE (t)-[:PERFORMED_BY]->(a)",
-                    parameters("name", artist, "trackId", trackId)
-                );
-            }
+            // Relación con Artist
+            tx.run(
+                "MERGE (a:Artist {name: $name}) " +
+                "WITH a MATCH (t:Track {id: $trackId}) " +
+                "MERGE (t)-[:PERFORMED_BY]->(a)",
+                parameters("name", artist, "trackId", trackId)
+            );
 
-            // Playlists
+            // Relación con Playlist
             if (!playlistName.isEmpty()) {
                 tx.run(
                     "MERGE (p:Playlist {name: $name}) " +
@@ -127,7 +145,7 @@ public class Neo4jManager implements AutoCloseable {
                 );
             }
 
-            // géneros
+            // Relación con Genre
             if (!genre.isEmpty()) {
                 tx.run(
                     "MERGE (g:Genre {name: $name}) " +
@@ -139,6 +157,45 @@ public class Neo4jManager implements AutoCloseable {
         }
     }
 
+    /**
+     * Crea relaciones de similitud entre canciones basadas en sus características.
+     * Se asigna un peso a cada relación.
+     */
+    public void crearAristasSimilitud() {
+
+        try (Session session = driver.session()) {
+
+            // Crear índices
+            session.executeWrite(tx -> {
+                tx.run("CREATE INDEX track_id IF NOT EXISTS FOR (t:Track) ON (t.id)");
+                tx.run("CREATE INDEX genre_name IF NOT EXISTS FOR (g:Genre) ON (g.name)");
+                return null;
+            });
+
+            // Crear relaciones SIMILAR_TO con peso
+            session.executeWrite(tx -> {
+
+                tx.run(
+                    "MATCH (g:Genre)<-[:HAS_GENRE]-(t1:Track) " +
+                    "MATCH (g)<-[:HAS_GENRE]-(t2:Track) " +
+                    "WHERE t1.id < t2.id " +
+                    "WITH t1, t2, " +
+                    "sqrt( (t1.danceability - t2.danceability)^2 + " +
+                    "(t1.energy - t2.energy)^2 + " +
+                    "((t1.popularity - t2.popularity)/100.0)^2 ) AS w " +
+                    "WHERE w < 0.25 " +
+                    "MERGE (t1)-[r:SIMILAR_TO]->(t2) " +
+                    "SET r.weight = w"
+                );
+
+                return null;
+            });
+        }
+    }
+
+    /**
+     * Convierte los datos del CSV en un mapa de clave-valor.
+     */
     private Map<String, String> mapearDatos(String[] headers, String[] datos) {
         Map<String, String> fila = new HashMap<>();
         int limite = Math.min(headers.length, datos.length);
@@ -150,10 +207,16 @@ public class Neo4jManager implements AutoCloseable {
         return fila;
     }
 
+    /**
+     * Limpia strings eliminando comillas y espacios.
+     */
     private String limpiar(String valor) {
         return valor == null ? "" : valor.replace("\"", "").trim();
     }
 
+    /**
+     * Convierte un string a double.
+     */
     private double parseDouble(String valor) {
         try {
             return Double.parseDouble(limpiar(valor));
@@ -162,6 +225,9 @@ public class Neo4jManager implements AutoCloseable {
         }
     }
 
+    /**
+     * Parsea la fecha
+     */
     private String parseDate(String valor) {
         String limpio = limpiar(valor);
 
