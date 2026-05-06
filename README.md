@@ -2,7 +2,6 @@
 
 Proyecto en Java que se conecta a **Neo4j**, **importa datos desde archivos CSV** (dataset de Spotify / dataset de pruebas) y **genera relaciones de similitud** entre canciones para construir un grafo consultable.
 
-> **Nota importante:** Este README está basado en el flujo real del programa (clases `Main` y `Neo4jManager`) y mantiene una estructura similar al README que compartiste.
 
 ---
 
