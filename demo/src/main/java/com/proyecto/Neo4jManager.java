@@ -194,11 +194,14 @@ public class Neo4jManager {
         }
     }
     public void crearAristasSimilitud() {
+        // Schema (índices) en una transacción
         try (Transaction tx = graphDb.beginTx()) {
-
             tx.execute("CREATE INDEX track_id IF NOT EXISTS FOR (t:Track) ON (t.id)");
             tx.execute("CREATE INDEX genre_name IF NOT EXISTS FOR (g:Genre) ON (g.name)");
-
+            tx.commit();
+        }
+        // Datos (relaciones) en otra transacción
+        try (Transaction tx = graphDb.beginTx()) {
             tx.execute(
                 "MATCH (g:Genre)<-[:HAS_GENRE]-(t1:Track) " +
                 "MATCH (g)<-[:HAS_GENRE]-(t2:Track) " +
@@ -216,8 +219,28 @@ public class Neo4jManager {
                 "MERGE (t1)-[r:SIMILAR_TO]->(t2) " +
                 "SET r.weight = w"
             );
+            tx.commit();
+        }
+    }
+    public void recomendarPorGenero(String genreName, int k) {
+        try (Transaction tx = graphDb.beginTx()) {
+            var result = tx.execute(
+                "MATCH (g:Genre {name:$genre})<-[:HAS_GENRE]-(t:Track) " +
+                "RETURN t.id AS id, t.name AS name, t.popularity AS pop " +
+                "ORDER BY pop DESC " +
+                "LIMIT $k",
+                Map.of("genre", genreName, "k", k)
+            );
+
+            System.out.println("\nTop " + k + " recomendaciones para género: " + genreName);
+            while (result.hasNext()) {
+                var row = result.next();
+                System.out.printf("- %s (pop=%.0f)%n", row.get("name"), (double) row.get("pop"));
+            }
 
             tx.commit();
+        } catch (Exception e) {
+            System.err.println("Error recomendando por género: " + e.getMessage());
         }
     }
 }
