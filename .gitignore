@@ -38,3 +38,7 @@ replay_pid*
 
 # Neo4j embedded database directory (generated locally)
 datos_grafos/
+
+# IntelliJ IDEA Configuration
+*.iml
+.idea/
