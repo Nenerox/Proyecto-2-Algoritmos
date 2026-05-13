@@ -50,5 +50,5 @@ buildNumber.properties
 hs_err_pid*
 replay_pid*
 
-# Neo4j embedded database directory (generated locally)
-datos_grafos/
+# Google Services (e.g. APIs or Firebase)
+**/google-services.json
