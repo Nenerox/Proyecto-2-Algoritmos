@@ -19,6 +19,20 @@
 *.tar.gz
 *.rar
 
+# Android
+android-app/.gradle/
+android-app/build/
+android-app/local.properties
+
+# Node
+backend/functions/node_modules/
+
+# Firebase
+backend/.firebase/
+
+# OS
+.DS_Store
+
 ### Maven ###
 target/
 pom.xml.tag
