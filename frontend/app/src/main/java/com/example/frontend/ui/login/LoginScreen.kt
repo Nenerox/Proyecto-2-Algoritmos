@@ -73,7 +73,7 @@ fun LoginScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(horizontal = 24.dp, vertical = 20.dp)
+                .padding(horizontal = 24.dp, vertical = 32.dp)
                 .verticalScroll(rememberScrollState()),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
@@ -92,17 +92,17 @@ fun LoginScreen(
                 )
             }
 
-            Spacer(modifier = Modifier.height(30.dp))
+            Spacer(modifier = Modifier.height(40.dp))
 
             Column(
                 modifier = Modifier
                     .shadow(elevation = 4.dp, spotColor = Color(0x40000000), ambientColor = Color(0x40000000))
-                    .border(width = 2.dp, color = Color(0xFF383838), shape = RoundedCornerShape(size = 25.dp))
-                    .widthIn(max = 308.dp)
+                    .border(width = 2.dp, color = Color(0xFF383838), shape = RoundedCornerShape(size = 24.dp))
+                    .widthIn(max = 320.dp)
                     .fillMaxWidth()
-                    .background(color = Color(0xFF201F1F).copy(alpha = 0.5f), shape = RoundedCornerShape(size = 25.dp))
-                    .padding(24.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp)
+                    .background(color = Color(0xFF201F1F).copy(alpha = 0.5f), shape = RoundedCornerShape(size = 24.dp))
+                    .padding(32.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 Text(
                     text = "Bienvenido\nde vuelta",
@@ -111,15 +111,15 @@ fun LoginScreen(
                     fontWeight = FontWeight.Bold,
                     textAlign = TextAlign.Center,
                     modifier = Modifier.fillMaxWidth(),
-                    lineHeight = 28.sp
+                    lineHeight = 32.sp
                 )
 
-                Spacer(Modifier.height(4.dp))
+                Spacer(Modifier.height(8.dp))
 
                 Text(
                     text = "Email",
                     color = Color.White,
-                    fontSize = 13.sp,
+                    fontSize = 14.sp,
                     fontWeight = FontWeight.Bold
                 )
                 SymphonixTextField(
@@ -132,7 +132,7 @@ fun LoginScreen(
                 Text(
                     text = "Contraseña",
                     color = Color.White,
-                    fontSize = 13.sp,
+                    fontSize = 14.sp,
                     fontWeight = FontWeight.Bold
                 )
                 SymphonixTextField(
@@ -150,7 +150,7 @@ fun LoginScreen(
                     Text(
                         text = "¿Olvidaste la Contraseña?",
                         color = Color(0xFFCCCCCC),
-                        fontSize = 12.sp
+                        fontSize = 14.sp
                     )
                 }
 
@@ -158,11 +158,11 @@ fun LoginScreen(
                     onClick = { onLogin(email.trim(), password) },
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(50.dp),
+                        .height(56.dp),
                     shape = RoundedCornerShape(16.dp),
                     colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF5A107C))
                 ) {
-                    Text("Iniciar Sesión", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 15.sp)
+                    Text("Iniciar Sesión", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 16.sp)
                 }
 
                 TextButton(
@@ -170,7 +170,7 @@ fun LoginScreen(
                     modifier = Modifier.fillMaxWidth(),
                     contentPadding = PaddingValues(0.dp)
                 ) {
-                    Text("Registrarse", color = Color(0xFFCCCCCC), fontSize = 13.sp, fontWeight = FontWeight.Bold)
+                    Text("Registrarse", color = Color(0xFFCCCCCC), fontSize = 14.sp, fontWeight = FontWeight.Bold)
                 }
             }
         }
