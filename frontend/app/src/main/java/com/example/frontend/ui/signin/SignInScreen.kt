@@ -31,42 +31,34 @@ fun SignInScreen(
     var password by remember { mutableStateOf("") }
     var confirmPassword by remember { mutableStateOf("") }
 
-    val bgColor = Color(0xFF252525)
-    val gradientColor = Color(0xFF4F1676)
+    val bgColor = Color(0xFF0D1612)
+    val greenColor = Color(0xFF1DB954)
+    val purpleColor = Color(0xFF913AA1)
 
     Box(
         modifier = Modifier
             .fillMaxSize()
             .background(bgColor)
     ) {
-        // Radial Gradients (Mismo estilo que Login)
+        // Radial Gradients (Efecto Refinado: Verde a la izquierda, Púrpura a la derecha)
         Canvas(modifier = Modifier.fillMaxSize()) {
             drawCircle(
                 brush = Brush.radialGradient(
-                    colors = listOf(gradientColor, Color.Transparent),
-                    center = Offset(size.width * 0.1f, size.height * 0.2f),
-                    radius = size.width * 0.8f
-                ),
-                center = Offset(size.width * 0.1f, size.height * 0.2f),
-                radius = size.width * 0.8f
-            )
-            drawCircle(
-                brush = Brush.radialGradient(
-                    colors = listOf(gradientColor, Color.Transparent),
-                    center = Offset(size.width * 0.9f, size.height * 0.5f),
-                    radius = size.width * 0.7f
-                ),
-                center = Offset(size.width * 0.9f, size.height * 0.5f),
-                radius = size.width * 0.7f
-            )
-            drawCircle(
-                brush = Brush.radialGradient(
-                    colors = listOf(gradientColor, Color.Transparent),
-                    center = Offset(size.width * 0.3f, size.height * 0.8f),
+                    colors = listOf(greenColor.copy(alpha = 0.3f), Color.Transparent),
+                    center = Offset(size.width * 0.0f, size.height * 0.5f),
                     radius = size.width * 0.9f
                 ),
-                center = Offset(size.width * 0.3f, size.height * 0.8f),
+                center = Offset(size.width * 0.0f, size.height * 0.5f),
                 radius = size.width * 0.9f
+            )
+            drawCircle(
+                brush = Brush.radialGradient(
+                    colors = listOf(purpleColor.copy(alpha = 0.25f), Color.Transparent),
+                    center = Offset(size.width * 1.0f, size.height * 0.4f),
+                    radius = size.width * 0.8f
+                ),
+                center = Offset(size.width * 1.0f, size.height * 0.4f),
+                radius = size.width * 0.8f
             )
         }
 

@@ -9,6 +9,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.frontend.ui.login.LoginScreen
 import com.example.frontend.ui.signin.SignInScreen
+import com.example.frontend.ui.genre.GenreSelectionScreen
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -32,7 +33,13 @@ fun SymphonixApp() {
         }
         composable("signin") {
             SignInScreen(
-                onLoginClick = { navController.popBackStack() }
+                onLoginClick = { navController.popBackStack() },
+                onSignIn = { _, _, _ -> navController.navigate("genre") }
+            )
+        }
+        composable("genre") {
+            GenreSelectionScreen(
+                onContinue = { /* TODO: Navegar a Home */ }
             )
         }
     }
