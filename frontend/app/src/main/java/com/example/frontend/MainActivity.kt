@@ -10,6 +10,7 @@ import androidx.navigation.compose.rememberNavController
 import com.example.frontend.ui.login.LoginScreen
 import com.example.frontend.ui.signin.SignInScreen
 import com.example.frontend.ui.genre.GenreSelectionScreen
+import com.example.frontend.ui.home.HomeScreen
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -27,6 +28,7 @@ fun SymphonixApp() {
     NavHost(navController = navController, startDestination = "login") {
         composable("login") {
             LoginScreen(
+                onLogin = { _, _ -> navController.navigate("home") },
                 onRegister = { navController.navigate("signin") },
                 onForgotPassword = { /* TODO */ }
             )
@@ -39,8 +41,11 @@ fun SymphonixApp() {
         }
         composable("genre") {
             GenreSelectionScreen(
-                onContinue = { /* TODO: Navegar a Home */ }
+                onContinue = { navController.navigate("home") }
             )
+        }
+        composable("home") {
+            HomeScreen()
         }
     }
 }
