@@ -13,23 +13,19 @@ public class Main {
     public static void main(String[] args) {
 
         // Datos de conexión a Neo4j
-        String uri = "neo4j://127.0.0.1:7687";
-        String user = "neo4j";
-        String password = "algoritmos1234";
+        String uri = "neo4j+s://6b0e96ad.databases.neo4j.io";
+        String user = "6b0e96ad";
+        String password = "hu5iom_sl69EXx05ribA3ysQLpNycIXs_VasdwAOvYE";
 
         // Rutas de archivos CSV
-        String rutaDatos = "demo\\src\\main\\java\\com\\proyecto\\spotify_songs.csv";
-        String rutaPruebas = "demo\\src\\main\\java\\com\\proyecto\\Data_Base_Pruebas.csv";
+        String rutaDatos = "demo\\src\\main\\java\\com\\proyecto\\dataset.csv";
 
         try (Neo4jManager manager = new Neo4jManager(uri, user, password)) {
 
             System.out.println("Conectando a Neo4j...");
 
-            // Importa datos de prueba
-            manager.importarDatos(rutaPruebas);
-
-            // Para usar el dataset completo, se debe descomentar la siguiente línea
-            // manager.importarDatos(rutaDatos);
+            // Importa datos
+            manager.importarDatos(rutaDatos);
 
             // Crea relaciones de similitud entre canciones
             manager.crearAristasSimilitud();
