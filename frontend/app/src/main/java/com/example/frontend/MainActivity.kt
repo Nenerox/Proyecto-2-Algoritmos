@@ -11,6 +11,7 @@ import com.example.frontend.ui.login.LoginScreen
 import com.example.frontend.ui.signin.SignInScreen
 import com.example.frontend.ui.genre.GenreSelectionScreen
 import com.example.frontend.ui.home.HomeScreen
+import com.example.frontend.ui.profile.ProfileScreen
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -45,7 +46,15 @@ fun SymphonixApp() {
             )
         }
         composable("home") {
-            HomeScreen()
+            HomeScreen(
+                onProfileClick = { navController.navigate("profile") }
+            )
+        }
+        composable("profile") {
+            ProfileScreen(
+                onBack = { navController.popBackStack() },
+                onHomeClick = { navController.navigate("home") }
+            )
         }
     }
 }

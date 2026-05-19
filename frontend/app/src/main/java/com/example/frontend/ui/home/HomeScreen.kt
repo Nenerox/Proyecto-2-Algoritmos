@@ -28,10 +28,12 @@ import androidx.compose.ui.unit.sp
 import com.example.frontend.R
 
 @Composable
-fun HomeScreen() {
+fun HomeScreen(
+    onProfileClick: () -> Unit = {}
+) {
     val bgColor = Color(0xFF252525)
     val white = Color(0xFFFFFFFF)
-    val recommendColor = Color(0xFFC14CD0)
+    val recommendColor = Color(0xFF4CAF50)
 
     var selectedTab by remember { mutableIntStateOf(0) }
 
@@ -49,7 +51,10 @@ fun HomeScreen() {
 
                 SymphonixBottomBar(
                     selectedIndex = selectedTab,
-                    onTabSelected = { selectedTab = it },
+                    onTabSelected = { 
+                        selectedTab = it
+                        if (it == 3) onProfileClick()
+                    },
                     white = white
                 )
             }
@@ -172,44 +177,28 @@ fun SectionTitle(title: String) {
 }
 @Composable
 fun DiscoverWeeklyBanner() {
-
     Box(
         modifier = Modifier
             .fillMaxWidth()
             .height(160.dp)
             .clip(RoundedCornerShape(24.dp))
+            .background(Color(0xFFB582C7)) // Color solicitado: #B582C7
     ) {
-
-        Image(
-            painter = painterResource(id = R.drawable.image123),
-            contentDescription = null,
-            modifier = Modifier.fillMaxSize(),
-            contentScale = ContentScale.Crop
-        )
-
-        // Overlay oscuro opcional para mejorar lectura
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(Color.Black.copy(alpha = 0.25f))
-        )
-
         Column(
             modifier = Modifier
                 .padding(24.dp)
                 .fillMaxHeight()
         ) {
-
             Text(
                 text = "Descubre semanalmente",
-                color = Color.White,
+                color = Color.Black,
                 fontWeight = FontWeight.Bold,
                 fontSize = 18.sp
             )
 
             Text(
                 text = "Según tus gustos y estados \nde ánimo",
-                color = Color.White.copy(alpha = 0.85f),
+                color = Color.Black.copy(alpha = 0.7f),
                 fontSize = 12.sp,
                 modifier = Modifier.padding(top = 8.dp)
             )
