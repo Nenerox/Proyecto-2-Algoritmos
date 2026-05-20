@@ -19,6 +19,20 @@
 *.tar.gz
 *.rar
 
+# Android
+android-app/.gradle/
+android-app/build/
+android-app/local.properties
+
+# Node
+backend/functions/node_modules/
+
+# Firebase
+backend/.firebase/
+
+# OS
+.DS_Store
+
 ### Maven ###
 target/
 pom.xml.tag
@@ -36,5 +50,5 @@ buildNumber.properties
 hs_err_pid*
 replay_pid*
 
-# Neo4j embedded database directory (generated locally)
-datos_grafos/
+# Google Services (e.g. APIs or Firebase)
+**/google-services.json
