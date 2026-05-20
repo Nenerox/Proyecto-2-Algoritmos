@@ -221,7 +221,7 @@ fun DiscoverWeeklyBanner() {
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .height(180.dp)
+            .height(200.dp)
             .clip(RoundedCornerShape(28.dp))
             .background(
                 Brush.linearGradient(
@@ -254,8 +254,8 @@ fun DiscoverWeeklyBanner() {
             Text(
                 text = "Personalizado para tus oídos",
                 color = Color.White.copy(alpha = 0.8f),
-                fontSize = 13.sp,
-                modifier = Modifier.padding(top = 8.dp)
+                fontSize = 12.sp,
+                modifier = Modifier.padding(top = 8.dp, bottom = 8.dp)
             )
 
             Spacer(modifier = Modifier.weight(1f))
@@ -264,8 +264,8 @@ fun DiscoverWeeklyBanner() {
                 Button(
                     onClick = {},
                     colors = ButtonDefaults.buttonColors(containerColor = Color.White),
-                    shape = RoundedCornerShape(12.dp),
-                    contentPadding = PaddingValues(horizontal = 20.dp)
+                    shape = RoundedCornerShape(16.dp),
+                    contentPadding = PaddingValues(horizontal = 24.dp)
                 ) {
                     Icon(Icons.Default.PlayArrow, null, tint = Color.Black, modifier = Modifier.size(16.dp))
                     Spacer(Modifier.width(8.dp))

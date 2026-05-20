@@ -1,8 +1,8 @@
 plugins {
-    id("com.android.application")
     alias(libs.plugins.android.application)
+    alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
-    id("com.google.gms.google-services")
+    // alias(libs.plugins.google.services)
 }
 
 android {
@@ -33,8 +33,8 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_11
-        targetCompatibility = JavaVersion.VERSION_11
+        sourceCompatibility = JavaVersion.VERSION_21
+        targetCompatibility = JavaVersion.VERSION_21
     }
     buildFeatures {
         compose = true
@@ -58,8 +58,10 @@ dependencies {
     androidTestImplementation(libs.androidx.junit)
     debugImplementation(libs.androidx.compose.ui.test.manifest)
     debugImplementation(libs.androidx.compose.ui.tooling)
+    /*
     implementation(platform("com.google.firebase:firebase-bom:34.13.0"))
-    implementation 'com.google.firebase:firebase-auth'
-    implementation 'com.google.firebase:firebase-functions'
+    implementation("com.google.firebase:firebase-auth")
+    implementation("com.google.firebase:firebase-functions")
     implementation("com.google.firebase:firebase-analytics")
+    */
 }
