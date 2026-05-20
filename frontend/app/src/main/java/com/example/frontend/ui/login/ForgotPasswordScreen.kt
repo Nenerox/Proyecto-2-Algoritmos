@@ -4,7 +4,6 @@ import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
@@ -27,14 +26,14 @@ import com.example.frontend.R
 import androidx.compose.ui.tooling.preview.Preview
 
 @Composable
-fun LoginScreen(
-    onLogin: (email: String, password: String) -> Unit = { _, _ -> },
-    onRegister: () -> Unit = {},
-    onForgotPassword: () -> Unit = {}
+fun ForgotPasswordScreen(
+    onResetPassword: (newPass: String) -> Unit = {},
+    onBack: () -> Unit = {}
 ) {
-    var email by remember { mutableStateOf("") }
-    var password by remember { mutableStateOf("") }
+    var newPassword by remember { mutableStateOf("") }
+    var confirmPassword by remember { mutableStateOf("") }
     var passwordVisible by remember { mutableStateOf(false) }
+    var confirmPasswordVisible by remember { mutableStateOf(false) }
 
     val bgColor = Color(0xFF0D1612)
     val greenColor = Color(0xFF1DB954)
@@ -45,7 +44,7 @@ fun LoginScreen(
             .fillMaxSize()
             .background(bgColor)
     ) {
-        // Fondo con degradados sutiles
+        // Fondos con degradados sutiles
         Canvas(modifier = Modifier.fillMaxSize()) {
             drawCircle(
                 brush = Brush.radialGradient(
@@ -77,9 +76,9 @@ fun LoginScreen(
         ) {
             Image(
                 painter = painterResource(id = R.drawable.ic_symphonix_logo),
-                contentDescription = "Logo",
+                contentDescription = "Symphonix Logo",
                 modifier = Modifier
-                    .width(280.dp)
+                    .width(260.dp)
                     .padding(bottom = 24.dp)
             )
 
@@ -97,44 +96,29 @@ fun LoginScreen(
                     verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
                     Text(
-                        text = "Bienvenido",
+                        text = "Restablecer\nContraseña",
                         color = Color.White,
                         fontSize = 26.sp,
                         fontWeight = FontWeight.Bold,
                         textAlign = TextAlign.Center,
-                        modifier = Modifier.fillMaxWidth()
+                        modifier = Modifier.fillMaxWidth(),
+                        lineHeight = 32.sp
                     )
 
                     Spacer(Modifier.height(8.dp))
 
                     Column(modifier = Modifier.fillMaxWidth()) {
                         Text(
-                            text = "Correo Electrónico",
+                            text = "Nueva Contraseña",
                             color = Color.White,
                             fontSize = 14.sp,
                             fontWeight = FontWeight.Bold,
                             modifier = Modifier.padding(bottom = 8.dp)
                         )
                         SymphonixTextField(
-                            value = email,
-                            onValueChange = { email = it },
-                            placeholder = "Ingresa tu correo",
-                            icon = Icons.Default.Email
-                        )
-                    }
-
-                    Column(modifier = Modifier.fillMaxWidth()) {
-                        Text(
-                            text = "Contraseña",
-                            color = Color.White,
-                            fontSize = 14.sp,
-                            fontWeight = FontWeight.Bold,
-                            modifier = Modifier.padding(bottom = 8.dp)
-                        )
-                        SymphonixTextField(
-                            value = password,
-                            onValueChange = { password = it },
-                            placeholder = "Ingresa tu contraseña",
+                            value = newPassword,
+                            onValueChange = { newPassword = it },
+                            placeholder = "Ingresa tu nueva",
                             icon = Icons.Default.Lock,
                             isPassword = true,
                             passwordVisible = passwordVisible,
@@ -142,21 +126,29 @@ fun LoginScreen(
                         )
                     }
 
-                    // Olvidé mi contraseña
-                    TextButton(
-                        onClick = onForgotPassword,
-                        modifier = Modifier.align(Alignment.End),
-                        contentPadding = PaddingValues(0.dp)
-                    ) {
+                    Column(modifier = Modifier.fillMaxWidth()) {
                         Text(
-                            "¿Olvidaste tu contraseña?",
-                            color = Color.Gray,
-                            fontSize = 12.sp
+                            text = "Confirmar Contraseña",
+                            color = Color.White,
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.Bold,
+                            modifier = Modifier.padding(bottom = 8.dp)
+                        )
+                        SymphonixTextField(
+                            value = confirmPassword,
+                            onValueChange = { confirmPassword = it },
+                            placeholder = "Confirma tu nueva",
+                            icon = Icons.Default.Lock,
+                            isPassword = true,
+                            passwordVisible = confirmPasswordVisible,
+                            onTogglePassword = { confirmPasswordVisible = !confirmPasswordVisible }
                         )
                     }
 
+                    Spacer(Modifier.height(8.dp))
+
                     Button(
-                        onClick = { onLogin(email.trim(), password) },
+                        onClick = { onResetPassword(newPassword) },
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(58.dp)
@@ -175,18 +167,15 @@ fun LoginScreen(
                                 ),
                             contentAlignment = Alignment.Center
                         ) {
-                            Text("Iniciar Sesión", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 16.sp)
+                            Text("Cambiar Contraseña", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 16.sp)
                         }
                     }
 
                     TextButton(
-                        onClick = onRegister,
+                        onClick = onBack,
                         modifier = Modifier.fillMaxWidth()
                     ) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Text("¿No tienes cuenta? ", color = Color.Gray, fontSize = 14.sp)
-                            Text("Regístrate", color = Color.White, fontSize = 14.sp, fontWeight = FontWeight.Bold)
-                        }
+                        Text("Volver", color = Color.White, fontSize = 14.sp, fontWeight = FontWeight.Medium)
                     }
                 }
             }
@@ -200,7 +189,7 @@ private fun SymphonixTextField(
     onValueChange: (String) -> Unit,
     placeholder: String,
     icon: androidx.compose.ui.graphics.vector.ImageVector? = null,
-    isPassword: Boolean = false,
+    isPassword: Boolean,
     passwordVisible: Boolean = false,
     onTogglePassword: () -> Unit = {}
 ) {
@@ -240,8 +229,8 @@ private fun SymphonixTextField(
 
 @Preview(showBackground = true, widthDp = 360, heightDp = 780)
 @Composable
-fun LoginScreenModernPreview() {
+fun ForgotPasswordScreenPreview() {
     MaterialTheme {
-        LoginScreen()
+        ForgotPasswordScreen()
     }
 }

@@ -77,9 +77,8 @@ fun GenreSelectionScreen(
                 painter = painterResource(id = R.drawable.ic_symphonix_logo),
                 contentDescription = "Symphonix Logo",
                 modifier = Modifier
-                    .widthIn(max = 205.dp)
-                    .fillMaxWidth(0.6f)
-                    .aspectRatio(205f / 92f)
+                    .width(260.dp)
+                    .padding(bottom = 24.dp)
             )
 
             Spacer(modifier = Modifier.height(32.dp))
@@ -133,14 +132,27 @@ fun GenreSelectionScreen(
 
                 Button(
                     onClick = { onContinue(selectedGenres.toList()) },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(58.dp)
+                        .shadow(12.dp, RoundedCornerShape(18.dp)),
+                    shape = RoundedCornerShape(18.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent),
+                    contentPadding = PaddingValues()
+                ) {
+                    Box(
                         modifier = Modifier
-                            .fillMaxWidth()
-                            .height(56.dp),
-                        shape = RoundedCornerShape(16.dp),
-                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF5A107C))
+                            .fillMaxSize()
+                            .background(
+                                Brush.linearGradient(
+                                    listOf(Color(0xFF5A107C), Color(0xFF913AA1))
+                                )
+                            ),
+                        contentAlignment = Alignment.Center
                     ) {
                         Text("Continuar", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 16.sp)
                     }
+                }
             }
         }
     }

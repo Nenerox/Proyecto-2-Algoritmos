@@ -8,9 +8,11 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.frontend.ui.login.LoginScreen
+import com.example.frontend.ui.login.ForgotPasswordScreen
 import com.example.frontend.ui.signin.SignInScreen
 import com.example.frontend.ui.genre.GenreSelectionScreen
 import com.example.frontend.ui.home.HomeScreen
+import com.example.frontend.ui.home.SearchScreen
 import com.example.frontend.ui.profile.ProfileScreen
 
 class MainActivity : ComponentActivity() {
@@ -31,7 +33,13 @@ fun SymphonixApp() {
             LoginScreen(
                 onLogin = { _, _ -> navController.navigate("home") },
                 onRegister = { navController.navigate("signin") },
-                onForgotPassword = { /* TODO */ }
+                onForgotPassword = { navController.navigate("forgot_password") }
+            )
+        }
+        composable("forgot_password") {
+            ForgotPasswordScreen(
+                onResetPassword = { _ -> navController.navigate("login") },
+                onBack = { navController.popBackStack() }
             )
         }
         composable("signin") {
@@ -47,13 +55,24 @@ fun SymphonixApp() {
         }
         composable("home") {
             HomeScreen(
-                onProfileClick = { navController.navigate("profile") }
+                onProfileClick = { navController.navigate("profile") },
+                onSearchClick = { navController.navigate("search") }
+            )
+        }
+        composable("search") {
+            SearchScreen(
+                onBack = { navController.popBackStack() }
             )
         }
         composable("profile") {
             ProfileScreen(
                 onBack = { navController.popBackStack() },
-                onHomeClick = { navController.navigate("home") }
+                onHomeClick = { navController.navigate("home") },
+                onLogout = {
+                    navController.navigate("login") {
+                        popUpTo(0) { inclusive = true }
+                    }
+                }
             )
         }
     }
