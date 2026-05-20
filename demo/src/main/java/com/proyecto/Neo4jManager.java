@@ -4,15 +4,24 @@ import org.neo4j.driver.*;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
-import java.io.IOException;
 import java.util.*;
 
 import static org.neo4j.driver.Values.parameters;
 
+/**
+ * Maneja la conexión con Neo4j Aura e importa los datos del CSV al grafo.
+ */
 public class Neo4jManager implements AutoCloseable {
 
     private final Driver driver;
 
+    /**
+     * Constructor que inicia la conexión con Neo4j Aura.
+     * 
+     * @param uri dirección de conexión de Aura
+     * @param user usuario de la base de datos
+     * @param password contraseña de la base de datos
+     */
     public Neo4jManager(String uri, String user, String password) {
 
         this.driver = GraphDatabase.driver(
@@ -20,17 +29,25 @@ public class Neo4jManager implements AutoCloseable {
                 AuthTokens.basic(user, password)
         );
 
-        // Verifica conexión REAL
+        // Verifica conexión real
         driver.verifyConnectivity();
 
         System.out.println("Conectado correctamente a Neo4j Aura");
     }
 
+    /**
+     * Cierra la conexión con la base de datos.
+     */
     @Override
     public void close() {
         driver.close();
     }
 
+    /**
+     * Importa los datos desde un archivo CSV y crea nodos y relaciones en Neo4j.
+     * 
+     * @param rutaArchivo ruta del archivo CSV
+     */
     public void importarDatos(String rutaArchivo) {
 
         try (
@@ -160,74 +177,9 @@ public class Neo4jManager implements AutoCloseable {
         }
     }
 
-    public void crearAristasSimilitud() {
-
-        try (
-                Session session = driver.session(
-                        SessionConfig.forDatabase("6b0e96ad")
-                )
-        ) {
-
-            System.out.println("Creando relaciones de similitud...");
-
-            // Índices
-            session.executeWrite(tx -> {
-
-                tx.run("""
-                    CREATE INDEX track_id IF NOT EXISTS
-                    FOR (t:Track)
-                    ON (t.id)
-                """);
-
-                tx.run("""
-                    CREATE INDEX artist_name IF NOT EXISTS
-                    FOR (a:Artist)
-                    ON (a.name)
-                """);
-
-                tx.run("""
-                    CREATE INDEX genre_name IF NOT EXISTS
-                    FOR (g:Genre)
-                    ON (g.name)
-                """);
-
-                return null;
-            });
-
-            // Relaciones SIMILAR_TO
-            session.executeWrite(tx -> {
-
-                tx.run("""
-                    MATCH (g:Genre)<-[:HAS_GENRE]-(t1:Track)
-                    MATCH (g)<-[:HAS_GENRE]-(t2:Track)
-
-                    WHERE t1.id < t2.id
-
-                    WITH t1, t2,
-
-                    sqrt(
-                        (t1.danceability - t2.danceability)^2 +
-                        (t1.energy - t2.energy)^2 +
-                        ((t1.popularity - t2.popularity)/100.0)^2
-                    ) AS distancia
-
-                    WHERE distancia < 0.25
-
-                    MERGE (t1)-[r:SIMILAR_TO]->(t2)
-
-                    SET r.weight = distancia
-                """);
-
-                return null;
-            });
-
-            System.out.println("Relaciones creadas correctamente.");
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
+    /**
+     * Convierte los datos del CSV en un mapa usando los headers como claves.
+     */
     private Map<String, String> mapearDatos(String[] headers, String[] datos) {
 
         Map<String, String> fila = new HashMap<>();
@@ -245,6 +197,9 @@ public class Neo4jManager implements AutoCloseable {
         return fila;
     }
 
+    /**
+     * Limpia strings eliminando espacios y comillas.
+     */
     private String limpiar(String valor) {
 
         if (valor == null) {
@@ -256,6 +211,10 @@ public class Neo4jManager implements AutoCloseable {
                 .trim();
     }
 
+    /**
+     * Convierte un string a double.
+     * Si ocurre un error, retorna 0.0.
+     */
     private double parseDouble(String valor) {
 
         try {

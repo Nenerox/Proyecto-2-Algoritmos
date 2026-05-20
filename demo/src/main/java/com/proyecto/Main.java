@@ -27,9 +27,6 @@ public class Main {
             // Importa datos
             manager.importarDatos(rutaDatos);
 
-            // Crea relaciones de similitud entre canciones
-            manager.crearAristasSimilitud();
-
             System.out.println("Datos importados correctamente.");
 
         } catch (Exception e) {
