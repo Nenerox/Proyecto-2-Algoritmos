@@ -19,6 +19,7 @@
 *.tar.gz
 *.rar
 
+!gradle/wrapper/gradle-wrapper.jar
 # Android
 android-app/.gradle/
 android-app/build/
