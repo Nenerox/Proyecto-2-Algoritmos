@@ -20,6 +20,7 @@
 *.rar
 !gradle/wrapper/gradle-wrapper.jar
 
+!gradle/wrapper/gradle-wrapper.jar
 # Android
 android-app/.gradle/
 android-app/build/
