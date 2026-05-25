@@ -18,6 +18,7 @@
 *.zip
 *.tar.gz
 *.rar
+!gradle/wrapper/gradle-wrapper.jar
 
 # Android
 android-app/.gradle/
@@ -52,8 +53,6 @@ replay_pid*
 
 # Google Services (e.g. APIs or Firebase)
 **/google-services.json
-# Neo4j embedded database directory (generated locally)
-datos_grafos/
 
 # IntelliJ IDEA Configuration
 *.iml
