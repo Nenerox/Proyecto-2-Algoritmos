@@ -4,48 +4,78 @@ import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.material3.Text
-import com.google.firebase.functions.FirebaseFunctions
-import com.google.firebase.auth.FirebaseAuth
+import androidx.compose.runtime.Composable
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
+import com.example.frontend.ui.login.LoginScreen
+import com.example.frontend.ui.login.ForgotPasswordScreen
+import com.example.frontend.ui.signin.SignInScreen
+import com.example.frontend.ui.genre.GenreSelectionScreen
+import com.example.frontend.ui.home.HomeScreen
+import com.example.frontend.ui.home.SearchScreen
+import com.example.frontend.ui.profile.ProfileScreen
 
 class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
-        FirebaseAuth.getInstance()
-            .signInAnonymously()
-            .addOnCompleteListener { task ->
-
-                if (task.isSuccessful) {
-
-                    Log.d("AUTH", "Login anónimo exitoso")
-
-                    val functions = FirebaseFunctions.getInstance()
-
-                    functions
-                        .getHttpsCallable("testNeo4j")
-                        .call()
-                        .addOnSuccessListener { result ->
-
-                            Log.d("FIREBASE", result.data.toString())
-
-                        }
-                        .addOnFailureListener {
-
-                            Log.e("FIREBASE", it.message.toString())
-
-                        }
-
-                } else {
-
-                    Log.e("AUTH", "Error auth")
-
-                }
-            }
-
         setContent {
-            Text(text = "Firebase funcionando 🚀")
+            SymphonixApp()
+        }
+    }
+}
+
+@Composable
+fun SymphonixApp() {
+    val navController = rememberNavController()
+    
+    NavHost(navController = navController, startDestination = "login") {
+        composable("login") {
+            LoginScreen(
+                onLogin = { _, _ -> navController.navigate("home") },
+                onRegister = { navController.navigate("signin") },
+                onForgotPassword = { navController.navigate("forgot_password") }
+            )
+        }
+        composable("forgot_password") {
+            ForgotPasswordScreen(
+                onResetPassword = { _ -> navController.navigate("login") },
+                onBack = { navController.popBackStack() }
+            )
+        }
+        composable("signin") {
+            SignInScreen(
+                onLoginClick = { navController.popBackStack() },
+                onSignIn = { _, _, _ -> navController.navigate("genre") }
+            )
+        }
+        composable("genre") {
+            GenreSelectionScreen(
+                onContinue = { navController.navigate("home") }
+            )
+        }
+        composable("home") {
+            HomeScreen(
+                onProfileClick = { navController.navigate("profile") },
+                onSearchClick = { navController.navigate("search") }
+            )
+        }
+        composable("search") {
+            SearchScreen(
+                onBack = { navController.popBackStack() }
+            )
+        }
+        composable("profile") {
+            ProfileScreen(
+                onBack = { navController.popBackStack() },
+                onHomeClick = { navController.navigate("home") },
+                onLogout = {
+                    navController.navigate("login") {
+                        popUpTo(0) { inclusive = true }
+                    }
+                }
+            )
         }
     }
 }

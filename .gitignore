@@ -18,6 +18,7 @@
 *.zip
 *.tar.gz
 *.rar
+!gradle/wrapper/gradle-wrapper.jar
 
 !gradle/wrapper/gradle-wrapper.jar
 # Android
@@ -53,3 +54,7 @@ replay_pid*
 
 # Google Services (e.g. APIs or Firebase)
 **/google-services.json
+
+# IntelliJ IDEA Configuration
+*.iml
+.idea/
