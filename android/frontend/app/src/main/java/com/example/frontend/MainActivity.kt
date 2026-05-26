@@ -15,6 +15,10 @@ import com.example.frontend.ui.genre.GenreSelectionScreen
 import com.example.frontend.ui.home.HomeScreen
 import com.example.frontend.ui.home.SearchScreen
 import com.example.frontend.ui.profile.ProfileScreen
+import androidx.compose.material3.Text
+import com.google.firebase.functions.FirebaseFunctions
+import com.google.firebase.auth.FirebaseAuth
+import android.widget.Toast
 
 class MainActivity : ComponentActivity() {
 
@@ -29,11 +33,27 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun SymphonixApp() {
     val navController = rememberNavController()
+    val auth = FirebaseAuth.getInstance()
+    val currentUser = auth.currentUser
+
+    val startDestination =
+        if (auth.currentUser != null) "home"
+        else "login"
     
-    NavHost(navController = navController, startDestination = "login") {
+    NavHost(navController = navController, startDestination = startDestination) {
         composable("login") {
             LoginScreen(
-                onLogin = { _, _ -> navController.navigate("home") },
+                onLogin = { email, password ->
+                    auth.signInWithEmailAndPassword(email, password).addOnCompleteListener { task ->
+                        if (task.isSuccessful) {
+                            navController.navigate("home") {
+                                popUpTo("login") { inclusive = true }
+                            }
+                        } else {
+                            Log.e("AUTH", task.exception?.message ?: "Login Error")
+                        }
+                    }
+                },
                 onRegister = { navController.navigate("signin") },
                 onForgotPassword = { navController.navigate("forgot_password") }
             )
@@ -47,7 +67,17 @@ fun SymphonixApp() {
         composable("signin") {
             SignInScreen(
                 onLoginClick = { navController.popBackStack() },
-                onSignIn = { _, _, _ -> navController.navigate("genre") }
+                onSignIn = { username, email, password ->
+                    auth.createUserWithEmailAndPassword(email, password).addOnCompleteListener { task ->
+                        if (task.isSuccessful) {
+                            navController.navigate("genre") {
+                                popUpTo("signin") { inclusive = true }
+                            }
+                        } else {
+                            Log.e("AUTH", task.exception?.message ?: "Register Error")
+                        }
+                    }
+                }
             )
         }
         composable("genre") {
@@ -68,9 +98,19 @@ fun SymphonixApp() {
         }
         composable("profile") {
             ProfileScreen(
+                username =
+                    currentUser?.displayName
+                        ?: currentUser?.email?.substringBefore("@")
+                        ?: "Usuario",
+
+                email =
+                    currentUser?.email
+                        ?: "Sin correo",
+                        
                 onBack = { navController.popBackStack() },
                 onHomeClick = { navController.navigate("home") },
                 onLogout = {
+                    auth.signOut()
                     navController.navigate("login") {
                         popUpTo(0) { inclusive = true }
                     }
