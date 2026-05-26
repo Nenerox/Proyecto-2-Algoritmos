@@ -34,6 +34,7 @@ class MainActivity : ComponentActivity() {
 fun SymphonixApp() {
     val navController = rememberNavController()
     val auth = FirebaseAuth.getInstance()
+    val currentUser = auth.currentUser
 
     val startDestination =
         if (auth.currentUser != null) "home"
@@ -97,6 +98,15 @@ fun SymphonixApp() {
         }
         composable("profile") {
             ProfileScreen(
+                username =
+                    currentUser?.displayName
+                        ?: currentUser?.email?.substringBefore("@")
+                        ?: "Usuario",
+
+                email =
+                    currentUser?.email
+                        ?: "Sin correo",
+                        
                 onBack = { navController.popBackStack() },
                 onHomeClick = { navController.navigate("home") },
                 onLogout = {

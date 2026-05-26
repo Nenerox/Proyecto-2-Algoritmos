@@ -21,6 +21,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.google.firebase.auth.FirebaseAuth
 
 @Composable
 fun HomeScreen(
@@ -30,6 +31,12 @@ fun HomeScreen(
     val bgColor = Color(0xFF121212) // Un negro más profundo y moderno
     val white = Color(0xFFFFFFFF)
     val accentColor = Color(0xFFB582C7)
+    val currentUser = FirebaseAuth.getInstance().currentUser
+
+    val username =
+        currentUser?.displayName
+            ?: currentUser?.email?.substringBefore("@")
+            ?: "Usuario"
 
     var selectedTab by remember { mutableIntStateOf(0) }
     var selectedCategory by remember { mutableStateOf("Todo") }
@@ -79,7 +86,7 @@ fun HomeScreen(
                         fontSize = 14.sp
                     )
                     Text(
-                        text = "Usuario",
+                        text = username,
                         color = Color.White,
                         fontSize = 26.sp,
                         fontWeight = FontWeight.ExtraBold
