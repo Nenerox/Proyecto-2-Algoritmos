@@ -72,9 +72,21 @@ fun SymphonixApp() {
                 onSignIn = { username, email, password ->
                     auth.createUserWithEmailAndPassword(email, password).addOnCompleteListener { task ->
                         if (task.isSuccessful) {
-                            navController.navigate("genre") {
-                                popUpTo("signin") { inclusive = true }
-                            }
+                            val profileUpdates =
+                                com.google.firebase.auth.UserProfileChangeRequest.Builder()
+                                    .setDisplayName(username)
+                                    .build()
+
+                            auth.currentUser
+                                ?.updateProfile(profileUpdates)
+                                ?.addOnCompleteListener {
+
+                                    navController.navigate("genre") {
+                                        popUpTo("signin") {
+                                            inclusive = true
+                                        }
+                                    }
+                                }
                         } else {
                             Log.e("AUTH", task.exception?.message ?: "Register Error")
                         }
@@ -111,20 +123,22 @@ fun SymphonixApp() {
             )
         }
         composable("profile") {
-            ProfileScreen(
-                username =
-                    currentUser?.displayName
-                        ?: currentUser?.email?.substringBefore("@")
-                        ?: "Usuario",
 
-                email =
-                    currentUser?.email
-                        ?: "Sin correo",
-                        
+            val user = FirebaseAuth.getInstance().currentUser
+
+            Log.d("PROFILE", "DisplayName: ${user?.displayName}")
+            Log.d("PROFILE", "Email: ${user?.email}")
+
+            ProfileScreen(
+                username = user?.displayName ?: "Usuario",
+                email = user?.email ?: "Sin correo",
+
                 onBack = { navController.popBackStack() },
                 onHomeClick = { navController.navigate("home") },
+
                 onLogout = {
                     auth.signOut()
+
                     navController.navigate("login") {
                         popUpTo(0) { inclusive = true }
                     }
