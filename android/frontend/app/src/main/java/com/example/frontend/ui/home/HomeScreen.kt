@@ -26,7 +26,8 @@ import com.google.firebase.auth.FirebaseAuth
 @Composable
 fun HomeScreen(
     onProfileClick: () -> Unit = {},
-    onSearchClick: () -> Unit = {}
+    onSearchClick: () -> Unit = {},
+    onMoodFormClick: () -> Unit = {}
 ) {
     val bgColor = Color(0xFF121212) // Un negro más profundo y moderno
     val white = Color(0xFFFFFFFF)
@@ -57,6 +58,7 @@ fun HomeScreen(
                         selectedTab = it
                         when (it) {
                             0 -> { /* Home */ }
+                            1 -> onMoodFormClick()
                             3 -> onProfileClick()
                             else -> { /* TODO: Other tabs */ }
                         }

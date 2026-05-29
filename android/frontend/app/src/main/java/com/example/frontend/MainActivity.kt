@@ -15,6 +15,8 @@ import com.example.frontend.ui.genre.GenreSelectionScreen
 import com.example.frontend.ui.home.HomeScreen
 import com.example.frontend.ui.home.SearchScreen
 import com.example.frontend.ui.profile.ProfileScreen
+import com.example.frontend.ui.form.MoodFormScreen
+import com.example.frontend.ui.form.MoodFormData
 import androidx.compose.material3.Text
 import com.google.firebase.functions.FirebaseFunctions
 import com.google.firebase.auth.FirebaseAuth
@@ -88,7 +90,19 @@ fun SymphonixApp() {
         composable("home") {
             HomeScreen(
                 onProfileClick = { navController.navigate("profile") },
-                onSearchClick = { navController.navigate("search") }
+                onSearchClick = { navController.navigate("search") },
+                onMoodFormClick = { navController.navigate("mood_form") }
+            )
+        }
+        composable("mood_form") {
+            MoodFormScreen(
+                onFinish = { _: MoodFormData -> navController.navigate("home") },
+                onTabSelected = { index: Int ->
+                    when (index) {
+                        0 -> navController.navigate("home")
+                        3 -> navController.navigate("profile")
+                    }
+                }
             )
         }
         composable("search") {
