@@ -42,6 +42,14 @@ fun SymphonixApp() {
     // Lista de géneros favoritos compartida
     var favoriteGenres by remember { mutableStateOf(listOf<String>()) }
 
+    //Vuelve a rellenar los datos de los generos al iniciar la app
+    LaunchedEffect(Unit) {
+        FirebaseFunctions.getInstance().getHttpsCallable("getUserGenres").call()
+            .addOnSuccessListener { result ->
+                favoriteGenres = (result.data as List<*>).map { it.toString() }
+            }
+    }
+
     val startDestination =
         if (auth.currentUser != null) "home"
         else "login"
@@ -66,8 +74,18 @@ fun SymphonixApp() {
         }
         composable("forgot_password") {
             ForgotPasswordScreen(
-                onResetPassword = { _ -> navController.navigate("login") },
-                onBack = { navController.popBackStack() }
+                onResetPassword = { email ->
+                    auth.sendPasswordResetEmail(email).addOnCompleteListener { task ->
+                            if (task.isSuccessful) {
+                                navController.navigate("login")
+                            } else {
+                                Log.e("AUTH",task.exception?.message ?: "Error")
+                            }
+                        }
+                },
+                onBack = {
+                    navController.popBackStack()
+                }
             )
         }
         composable("signin") {
@@ -85,7 +103,7 @@ fun SymphonixApp() {
                                 ?.updateProfile(profileUpdates)
                                 ?.addOnCompleteListener {
 
-                                    navController.navigate("genre") {
+                                    navController.navigate("home") {
                                         popUpTo("signin") {
                                             inclusive = true
                                         }
@@ -100,13 +118,37 @@ fun SymphonixApp() {
         }
         composable("genre") {
             GenreSelectionScreen(
-                onContinue = { selected -> 
+                onContinue = { selected ->
                     favoriteGenres = selected
-                    navController.navigate("home") 
+                    val data = hashMapOf(
+                        "genres" to selected
+                    )
+
+                    FirebaseFunctions.getInstance()
+                        .getHttpsCallable("savePreferences").call(data)
+
+                        .addOnSuccessListener {
+                            Log.d("GENRES","Se guardaron los generos")
+                            navController.navigate("home")
+                        }
+                        .addOnFailureListener {
+                            Log.e("GENRES", it.message ?: "Error guardando generos")
+                        }
                 }
             )
         }
         composable("home") {
+            LaunchedEffect(Unit) {
+                FirebaseFunctions.getInstance().getHttpsCallable("getUserGenres").call()
+                    .addOnSuccessListener { result ->
+                        val genres =
+                            (result.data as List<*>)
+                                .map { it.toString() }
+                        if (genres.isEmpty()) {
+                            navController.navigate("genre")
+                        }
+                    }
+            }
             HomeScreen(
                 onProfileClick = { navController.navigate("profile") },
                 onSearchClick = { navController.navigate("search") },
@@ -115,8 +157,31 @@ fun SymphonixApp() {
         }
         composable("mood_form") {
             MoodFormScreen(
-                onFinish = { _: MoodFormData -> navController.navigate("home") },
-                onTabSelected = { index: Int ->
+                onFinish = { form ->
+                    FirebaseFunctions.getInstance()
+                        .getHttpsCallable("saveDailyMood")
+                        .call(
+                            hashMapOf(
+                                "valence" to form.valence,
+                                "energy" to form.energy,
+                                "danceability" to form.danceability,
+                                "instrumentalness" to form.instrumentalness,
+                                "acousticness" to form.acousticness,
+                                "tempo" to form.tempo,
+                                "wantNewMusic" to form.wantNewMusic
+                            )
+                        )
+
+                        .addOnSuccessListener {
+                            Log.d("MOOD", "Mood guardado correctamente")
+                            navController.navigate("home")
+                        }
+                        .addOnFailureListener {
+                            Log.e("MOOD", it.message ?: "Error"
+                            )
+                        }
+                },
+                onTabSelected = { index ->
                     when (index) {
                         0 -> navController.navigate("home")
                         3 -> navController.navigate("profile")
