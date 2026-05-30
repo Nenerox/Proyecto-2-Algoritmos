@@ -1,17 +1,17 @@
 const functions = require("firebase-functions");
 const driver = require("./neo4j");
 
-exports.getRecommendations = functions.https.onCall(async (data, context) => {
+exports.getRecommendations = functions.https.onCall(async (request) => {
 
     const session = driver.session();
 
     try {
 
-        const genre = data.genre;
-        const energy = data.energy;
-        const danceability = data.danceability;
-        const valence = data.valence;
-        const limit = data.limit || 1;
+        const genre = request.data.genre;
+        const energy = request.data.energy;
+        const danceability = request.data.danceability;
+        const valence = request.data.valence;
+        const limit = request.data.limit || 1;
 
         const result = await session.run(
             `
