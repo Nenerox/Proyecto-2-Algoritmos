@@ -24,17 +24,15 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.frontend.R
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.material.icons.filled.Email
 
 @Composable
 fun ForgotPasswordScreen(
-    onResetPassword: (newPass: String) -> Unit = {},
+    onResetPassword: (email: String) -> Unit = {},
     onBack: () -> Unit = {}
 ) {
-    var newPassword by remember { mutableStateOf("") }
-    var confirmPassword by remember { mutableStateOf("") }
-    var passwordVisible by remember { mutableStateOf(false) }
-    var confirmPasswordVisible by remember { mutableStateOf(false) }
-
+    var email by remember { mutableStateOf("")
+    }
     val bgColor = Color(0xFF0D1612)
     val greenColor = Color(0xFF1DB954)
     val purpleColor = Color(0xFF913AA1)
@@ -109,46 +107,27 @@ fun ForgotPasswordScreen(
 
                     Column(modifier = Modifier.fillMaxWidth()) {
                         Text(
-                            text = "Nueva Contraseña",
+                            text = "Correo Electrónico",
                             color = Color.White,
                             fontSize = 14.sp,
                             fontWeight = FontWeight.Bold,
                             modifier = Modifier.padding(bottom = 8.dp)
                         )
-                        SymphonixTextField(
-                            value = newPassword,
-                            onValueChange = { newPassword = it },
-                            placeholder = "Ingresa tu nueva",
-                            icon = Icons.Default.Lock,
-                            isPassword = true,
-                            passwordVisible = passwordVisible,
-                            onTogglePassword = { passwordVisible = !passwordVisible }
-                        )
-                    }
 
-                    Column(modifier = Modifier.fillMaxWidth()) {
-                        Text(
-                            text = "Confirmar Contraseña",
-                            color = Color.White,
-                            fontSize = 14.sp,
-                            fontWeight = FontWeight.Bold,
-                            modifier = Modifier.padding(bottom = 8.dp)
-                        )
                         SymphonixTextField(
-                            value = confirmPassword,
-                            onValueChange = { confirmPassword = it },
-                            placeholder = "Confirma tu nueva",
-                            icon = Icons.Default.Lock,
-                            isPassword = true,
-                            passwordVisible = confirmPasswordVisible,
-                            onTogglePassword = { confirmPasswordVisible = !confirmPasswordVisible }
+                            value = email,
+                            onValueChange = { email = it },
+                            placeholder = "Ingresa tu correo",
+                            icon = Icons.Default.Email,
+                            isPassword = false
                         )
                     }
 
                     Spacer(Modifier.height(8.dp))
 
                     Button(
-                        onClick = { onResetPassword(newPassword) },
+                        onClick = {
+                            onResetPassword(email)},
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(58.dp)
@@ -167,7 +146,7 @@ fun ForgotPasswordScreen(
                                 ),
                             contentAlignment = Alignment.Center
                         ) {
-                            Text("Cambiar Contraseña", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 16.sp)
+                            Text("Enviar correo de recuperación", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 16.sp)
                         }
                     }
 
