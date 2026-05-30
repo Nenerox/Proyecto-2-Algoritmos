@@ -2,6 +2,7 @@ package com.example.frontend.ui.form
 
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
@@ -41,7 +42,9 @@ fun MoodFormScreen(
     var energy by remember { mutableFloatStateOf(5f) }
     var danceability by remember { mutableFloatStateOf(5f) }
     var wantNewMusic by remember { mutableStateOf<Boolean?>(null) }
-    var environment by remember { mutableStateOf("") }
+    var instrumentalness by remember { mutableFloatStateOf(5f) }
+    var acousticness by remember { mutableFloatStateOf(5f) }
+    var tempoPreference by remember { mutableFloatStateOf(5f) }
 
     Scaffold(
         containerColor = bgColor,
@@ -194,11 +197,61 @@ fun MoodFormScreen(
 
             Spacer(modifier = Modifier.height(32.dp))
 
+            FormSection(title = "¿Prefieres instrumental o voces?") {
+
+                Slider(
+                    value = instrumentalness,
+                    onValueChange = { instrumentalness = it },
+                    valueRange = 0f..10f,
+                    steps = 8
+                )
+
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                    Text("Voces", color = Color.Gray, fontSize = 12.sp)
+                    Text("Indiferente", color = Color.Gray, fontSize = 12.sp)
+                    Text("Instrumental", color = Color.Gray, fontSize = 12.sp)
+                }
+            }
+
+            Spacer(modifier = Modifier.height(32.dp))
+
+            FormSection(title = "¿Prefieres acústico o electrónico?") {
+
+                Slider(
+                    value = acousticness,
+                    onValueChange = { acousticness = it },
+                    valueRange = 0f..10f,
+                    steps = 8
+                )
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                    Text("Electrónico", color = Color.Gray, fontSize = 12.sp)
+                    Text("Indiferente", color = Color.Gray, fontSize = 12.sp)
+                    Text("Acústico", color = Color.Gray, fontSize = 12.sp)
+                }
+            }
+
+            Spacer(modifier = Modifier.height(32.dp))
+
+            FormSection(title = "¿Qué ritmo buscas hoy?") {
+
+                Slider(
+                    value = tempoPreference,
+                    onValueChange = { tempoPreference = it },
+                    valueRange = 0f..10f,
+                    steps = 8
+                )
+
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                    Text("Relajado", color = Color.Gray, fontSize = 12.sp)
+                    Text("Indiferente", color = Color.Gray, fontSize = 12.sp)
+                    Text("Rápido", color = Color.Gray, fontSize = 12.sp)
+                }
+            }
+
+            Spacer(modifier = Modifier.height(32.dp))
+
             FormSection(title = "¿Quieres descubrir algo nuevo?") {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                     SelectableChip(
                         text = "Si",
                         isSelected = wantNewMusic == true,
@@ -214,41 +267,27 @@ fun MoodFormScreen(
                 }
             }
 
-            Spacer(modifier = Modifier.height(32.dp))
-
-            FormSection(title = "¿Qué estás haciendo?") {
-                val contexts = listOf(
-                    "Estudiando", "Entrenando", "Descansando", "Fiesta", "Viajando",
-                    "Trabajando", "Cocinando", "Limpiando", "Meditando", "En el tráfico"
-                )
-                FlowRow(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    contexts.forEach { item ->
-                        SelectableChip(
-                            text = item,
-                            isSelected = environment == item,
-                            onClick = { environment = item }
-                        )
-                    }
-                }
-            }
-
             Spacer(modifier = Modifier.height(48.dp))
 
             // Botón de acción principal con el degradado de la app
             Button(
-                onClick = { 
-                    val moodStr = when(moodValue) {
-                        1 -> "Muy Triste"
-                        2 -> "Triste"
-                        3 -> "Neutral"
-                        4 -> "Feliz"
-                        else -> "Muy Feliz"
+                onClick = {
+                    val valence = when(moodValue) {
+                        1 -> 0.1f
+                        2 -> 0.3f
+                        3 -> 0.5f
+                        4 -> 0.7f
+                        else -> 0.9f
                     }
-                    onFinish(MoodFormData(moodStr, energy, danceability, wantNewMusic, environment))
+                    onFinish(MoodFormData(
+                        valence = valence,
+                        energy = energy / 10f,
+                        danceability = danceability / 10f,
+                        instrumentalness = instrumentalness / 10f,
+                        acousticness = acousticness / 10f,
+                        tempo = 60f + ((tempoPreference / 10f) * 140f),
+                        wantNewMusic = wantNewMusic ?: false
+                    ))
                 },
                 modifier = Modifier
                     .fillMaxWidth()
@@ -324,11 +363,13 @@ fun SelectableChip(
 
 
 data class MoodFormData(
-    val mood: String,
+    val valence: Float,
     val energy: Float,
     val danceability: Float,
-    val wantNewMusic: Boolean?,
-    val environment: String
+    val instrumentalness: Float,
+    val acousticness: Float,
+    val tempo: Float,
+    val wantNewMusic: Boolean?
 )
 
 @OptIn(ExperimentalLayoutApi::class)
