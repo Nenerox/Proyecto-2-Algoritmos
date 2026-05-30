@@ -42,14 +42,6 @@ fun SymphonixApp() {
     // Lista de géneros favoritos compartida
     var favoriteGenres by remember { mutableStateOf(listOf<String>()) }
 
-    //Vuelve a rellenar los datos de los generos al iniciar la app
-    LaunchedEffect(Unit) {
-        FirebaseFunctions.getInstance().getHttpsCallable("getUserGenres").call()
-            .addOnSuccessListener { result ->
-                favoriteGenres = (result.data as List<*>).map { it.toString() }
-            }
-    }
-
     val startDestination =
         if (auth.currentUser != null) "home"
         else "login"
@@ -121,7 +113,7 @@ fun SymphonixApp() {
                 onContinue = { selected ->
                     favoriteGenres = selected
                     val data = hashMapOf(
-                        "genres" to selected
+                        "genres" to selected.map { it.lowercase() }
                     )
 
                     FirebaseFunctions.getInstance()
@@ -198,8 +190,15 @@ fun SymphonixApp() {
 
             val user = FirebaseAuth.getInstance().currentUser
 
-            Log.d("PROFILE", "DisplayName: ${user?.displayName}")
-            Log.d("PROFILE", "Email: ${user?.email}")
+            LaunchedEffect(Unit) {
+                FirebaseFunctions.getInstance().getHttpsCallable("getUserGenres").call()
+                    .addOnSuccessListener { result ->
+
+                        favoriteGenres =
+                            (result.data as List<*>)
+                                .map { it.toString().replaceFirstChar { c -> c.uppercase() } }
+                    }
+            }
 
             ProfileScreen(
                 username = user?.displayName ?: "Usuario",

@@ -23,7 +23,7 @@ exports.saveDailyMood = functions.https.onCall(async (request) => {
     } = request.data;
 
     const session = driver.session();
-    
+
     try {
         await session.run(
             `
@@ -52,6 +52,7 @@ exports.saveDailyMood = functions.https.onCall(async (request) => {
                 wantNewMusic
             }
         );
+
         return {
             success: true
         };

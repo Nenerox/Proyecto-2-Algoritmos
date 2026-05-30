@@ -21,10 +21,10 @@ exports.getUserGenres = functions.https.onCall(async (request) => {
             (g:Genre)
 
             RETURN g.name AS genre
-            `
-            ,
+            `,
             { uid }
         );
+
         return result.records.map(
             record => record.get("genre")
         );
