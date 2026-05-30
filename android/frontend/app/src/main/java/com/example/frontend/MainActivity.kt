@@ -4,7 +4,7 @@ import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
@@ -15,6 +15,7 @@ import com.example.frontend.ui.genre.GenreSelectionScreen
 import com.example.frontend.ui.home.HomeScreen
 import com.example.frontend.ui.home.SearchScreen
 import com.example.frontend.ui.profile.ProfileScreen
+import com.example.frontend.ui.profile.AboutUsScreen
 import com.example.frontend.ui.form.MoodFormScreen
 import com.example.frontend.ui.form.MoodFormData
 import androidx.compose.material3.Text
@@ -37,6 +38,9 @@ fun SymphonixApp() {
     val navController = rememberNavController()
     val auth = FirebaseAuth.getInstance()
     val currentUser = auth.currentUser
+    
+    // Lista de géneros favoritos compartida
+    var favoriteGenres by remember { mutableStateOf(listOf<String>()) }
 
     val startDestination =
         if (auth.currentUser != null) "home"
@@ -96,7 +100,10 @@ fun SymphonixApp() {
         }
         composable("genre") {
             GenreSelectionScreen(
-                onContinue = { navController.navigate("home") }
+                onContinue = { selected -> 
+                    favoriteGenres = selected
+                    navController.navigate("home") 
+                }
             )
         }
         composable("home") {
@@ -132,17 +139,21 @@ fun SymphonixApp() {
             ProfileScreen(
                 username = user?.displayName ?: "Usuario",
                 email = user?.email ?: "Sin correo",
-
+                favoriteGenres = favoriteGenres,
                 onBack = { navController.popBackStack() },
                 onHomeClick = { navController.navigate("home") },
-
+                onAboutUsClick = { navController.navigate("about_us") },
                 onLogout = {
                     auth.signOut()
-
                     navController.navigate("login") {
                         popUpTo(0) { inclusive = true }
                     }
                 }
+            )
+        }
+        composable("about_us") {
+            AboutUsScreen(
+                onBack = { navController.popBackStack() }
             )
         }
     }

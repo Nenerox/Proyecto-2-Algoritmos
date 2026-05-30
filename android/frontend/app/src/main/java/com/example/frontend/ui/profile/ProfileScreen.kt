@@ -31,6 +31,7 @@ fun ProfileScreen(
     favoriteGenres: List<String> = listOf("Pop", "Rock", "Reggaetón", "Heavy Metal"),
     onBack: () -> Unit = {},
     onHomeClick: () -> Unit = {},
+    onAboutUsClick: () -> Unit = {},
     onLogout: () -> Unit = {}
 ) {
     val bgColor = Color(0xFF121212)
@@ -136,15 +137,6 @@ fun ProfileScreen(
                     Text("Editar Perfil", color = Color.White, fontWeight = FontWeight.Bold)
                 }
 
-                Spacer(Modifier.height(32.dp))
-
-                // Secciones con diseño limpio
-                ProfileSectionModern(title = "Cuenta") {
-                    ProfileItemModern(Icons.Outlined.Lock, "Seguridad")
-                    ProfileItemModern(Icons.Outlined.Notifications, "Notificaciones")
-                    ProfileItemModern(Icons.Outlined.Language, "Idioma", "Español")
-                }
-
                 Spacer(Modifier.height(24.dp))
 
                 ProfileSectionModern(title = "Géneros Favoritos") {
@@ -154,7 +146,11 @@ fun ProfileScreen(
                 Spacer(Modifier.height(24.dp))
 
                 ProfileSectionModern(title = "Soporte") {
-                    ProfileItemModern(Icons.Outlined.Info, "Sobre nosotros")
+                    ProfileItemModern(
+                        Icons.Outlined.Info, 
+                        "Sobre nosotros",
+                        onClick = onAboutUsClick
+                    )
                     ProfileItemModern(
                         Icons.AutoMirrored.Outlined.Logout, 
                         "Cerrar Sesión", 

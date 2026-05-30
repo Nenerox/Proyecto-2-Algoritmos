@@ -84,11 +84,6 @@ fun MoodFormScreen(
 
             Spacer(modifier = Modifier.height(32.dp))
 
-            // Calendario sutil
-            CalendarRow()
-
-            Spacer(modifier = Modifier.height(32.dp))
-
             // Formulario en tarjetas estilo moderno
             FormSection(title = "¿Cómo te sientes hoy?") {
                 Row(
@@ -160,7 +155,7 @@ fun MoodFormScreen(
                     Slider(
                         value = energy,
                         onValueChange = { energy = it },
-                        valueRange = 1f..10f,
+                        valueRange = 0f..10f,
                         steps = 8,
                         colors = SliderDefaults.colors(
                             thumbColor = Color.White,
@@ -182,7 +177,7 @@ fun MoodFormScreen(
                     Slider(
                         value = danceability,
                         onValueChange = { danceability = it },
-                        valueRange = 1f..10f,
+                        valueRange = 0f..10f,
                         steps = 8,
                         colors = SliderDefaults.colors(
                             thumbColor = Color.White,
@@ -327,87 +322,6 @@ fun SelectableChip(
     }
 }
 
-@Composable
-fun CalendarRow() {
-    val days = remember {
-        (0..6).map { i ->
-            val cal = Calendar.getInstance()
-            cal.add(Calendar.DAY_OF_YEAR, -i)
-            cal
-        }.reversed()
-    }
-    
-    // Simulación de conteo de recomendaciones por día
-    val recommendationCounts = remember {
-        val map = mutableMapOf<String, Int>()
-        val fmt = SimpleDateFormat("yyyyMMdd", Locale.getDefault())
-        
-        val cal1 = Calendar.getInstance()
-        val cal2 = Calendar.getInstance().apply { add(Calendar.DAY_OF_YEAR, -1) }
-        val cal3 = Calendar.getInstance().apply { add(Calendar.DAY_OF_YEAR, -2) }
-        val cal4 = Calendar.getInstance().apply { add(Calendar.DAY_OF_YEAR, -4) }
-        
-        map[fmt.format(cal1.time)] = 3
-        map[fmt.format(cal2.time)] = 1
-        map[fmt.format(cal3.time)] = 5
-        map[fmt.format(cal4.time)] = 2
-        map
-    }
-    val todayStr = SimpleDateFormat("yyyyMMdd", Locale.getDefault()).format(Calendar.getInstance().time)
-
-    LazyRow(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        userScrollEnabled = false
-    ) {
-        items(days) { dateCal ->
-            val dateStr = SimpleDateFormat("yyyyMMdd", Locale.getDefault()).format(dateCal.time)
-            val isToday = dateStr == todayStr
-            val count = recommendationCounts[dateStr] ?: 0
-            val dayName = SimpleDateFormat("E", Locale.forLanguageTag("es")).format(dateCal.time).take(1).uppercase()
-            val dayOfMonth = SimpleDateFormat("d", Locale.getDefault()).format(dateCal.time)
-            
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
-                modifier = Modifier.padding(horizontal = 4.dp)
-            ) {
-                Text(
-                    text = dayName,
-                    color = if (isToday) Color(0xFF1DB954) else Color.Gray,
-                    fontSize = 12.sp,
-                    fontWeight = FontWeight.Bold
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-                Box(
-                    modifier = Modifier
-                        .size(40.dp)
-                        .clip(CircleShape)
-                        .background(
-                            when {
-                                count >= 5 -> Color(0xFF1DB954)
-                                count >= 3 -> Color(0xFF1DB954).copy(alpha = 0.7f)
-                                count > 0 -> Color(0xFF1DB954).copy(alpha = 0.4f)
-                                else -> Color(0xFF252525)
-                            }
-                        )
-                        .border(
-                            width = if (isToday) 2.dp else 0.dp,
-                            color = if (isToday) Color.White else Color.Transparent,
-                            shape = CircleShape
-                        ),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        text = if (count > 0) count.toString() else dayOfMonth,
-                        color = if (count > 0) Color.Black else (if (isToday) Color.White else Color.Gray),
-                        fontSize = 14.sp,
-                        fontWeight = if (isToday || count > 0) FontWeight.Bold else FontWeight.Normal
-                    )
-                }
-            }
-        }
-    }
-}
 
 data class MoodFormData(
     val mood: String,
