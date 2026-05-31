@@ -1,5 +1,6 @@
 const functions = require("firebase-functions");
 const driver = require("./neo4j");
+const neo4j = require("neo4j-driver");
 
 exports.getRecommendations = functions.https.onCall(async (request) => {
 
@@ -12,7 +13,7 @@ exports.getRecommendations = functions.https.onCall(async (request) => {
 
     const uid = request.auth.uid;
 
-    const limit = request.data.limit || 20;
+    const limit = Number.parseInt(request.data.limit || 20,10);
     const genre = request.data.genre || null;
 
     const session = driver.session();
@@ -78,17 +79,30 @@ exports.getRecommendations = functions.https.onCall(async (request) => {
             score
 
         ORDER BY score ASC
-        LIMIT $limit
+        LIMIT toInteger($limit)
         `;
+
+        console.log("UID:", uid);
+        console.log("GENRE:", genre);
+        console.log("LIMIT:", limit);
 
         const result = await session.run(
             query,
             {
                 uid,
                 genre,
-                limit
+                limit: neo4j.int(limit)
             }
         );
+        console.log(
+        "RESULTADOS:",
+        result.records.length
+        );
+        if (result.records.length > 0) {
+        console.log(
+            result.records[0].toObject()
+        );
+}
 
         return result.records.map(record => ({
             id: record.get("id"),
