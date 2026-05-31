@@ -116,13 +116,12 @@ fun SymphonixApp() {
                     val data = hashMapOf(
                         "genres" to selected.map { it.lowercase() }
                     )
-
                     FirebaseFunctions.getInstance()
                         .getHttpsCallable("savePreferences").call(data)
 
                         .addOnSuccessListener {
                             Log.d("GENRES","Se guardaron los generos")
-                            navController.navigate("home")
+                            navController.navigate("mood_form")
                         }
                         .addOnFailureListener {
                             Log.e("GENRES", it.message ?: "Error guardando generos")
@@ -143,6 +142,7 @@ fun SymphonixApp() {
                     }
             }
             HomeScreen(
+                favoriteGenres = favoriteGenres,
                 onProfileClick = { navController.navigate("profile") },
                 onSearchClick = { navController.navigate("search") },
                 onMoodFormClick = { navController.navigate("mood_form") },
@@ -226,6 +226,7 @@ fun SymphonixApp() {
                 onMoodFormClick = { navController.navigate("mood_form") },
                 onFavoritesClick = { navController.navigate("favorites") },
                 onAboutUsClick = { navController.navigate("about_us") },
+                onEditGenresClick = { navController.navigate("genre") },
                 onLogout = {
                     auth.signOut()
                     navController.navigate("login") {
