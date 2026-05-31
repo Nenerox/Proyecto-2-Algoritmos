@@ -34,7 +34,8 @@ fun ProfileScreen(
     onMoodFormClick: () -> Unit = {},
     onFavoritesClick: () -> Unit = {},
     onAboutUsClick: () -> Unit = {},
-    onLogout: () -> Unit = {}
+    onLogout: () -> Unit = {},
+    onEditGenresClick: () -> Unit = {}
 ) {
     val bgColor = Color(0xFF121212)
     val accentColor = Color(0xFF1DB954)
@@ -136,14 +137,14 @@ fun ProfileScreen(
 
             Column(modifier = Modifier.padding(horizontal = 24.dp)) {
                 
-                // Botón Editar Perfil (Estilizado)
+                // Botón Editar generos (Estilizado)
                 Button(
-                    onClick = {},
+                    onClick = onEditGenresClick,
                     modifier = Modifier.fillMaxWidth().height(50.dp),
                     colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF252525)),
                     shape = RoundedCornerShape(14.dp)
                 ) {
-                    Text("Editar Perfil", color = Color.White, fontWeight = FontWeight.Bold)
+                    Text("Editar Generos Favoritos", color = Color.White, fontWeight = FontWeight.Bold)
                 }
 
                 Spacer(Modifier.height(24.dp))
