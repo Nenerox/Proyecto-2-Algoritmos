@@ -22,6 +22,11 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.functions.FirebaseFunctions
+import android.content.Intent
+import android.net.Uri
+import android.util.Log
+import androidx.compose.ui.platform.LocalContext
 
 @Composable
 fun HomeScreen(
@@ -37,8 +42,7 @@ fun HomeScreen(
     val white = Color(0xFFFFFFFF)
     val accentColor = Color(0xFFB582C7)
     val currentUser = FirebaseAuth.getInstance().currentUser
-
-
+    val context = LocalContext.current
 
     val username =
         currentUser?.displayName
@@ -67,7 +71,6 @@ fun HomeScreen(
                             1 -> onMoodFormClick()
                             2 -> onFavoritesClick()
                             3 -> onProfileClick()
-                            else -> { /* TODO: Other tabs */ }
                         }
                     },
                     white = white
@@ -137,7 +140,7 @@ fun HomeScreen(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(10.dp)
             ) {
-                val filters = listOf("Principal", favoriteGenres)
+                val filters = listOf("Todo") + favoriteGenres
                 items(filters) { filter ->
                     val isSelected = filter == selectedCategory
                     Surface(
@@ -158,42 +161,76 @@ fun HomeScreen(
                 }
             }
 
-            Spacer(modifier = Modifier.height(32.dp))
+            var recomendaciones by remember {
+                mutableStateOf<List<Map<String, Any>>>(emptyList())
+            }
 
-            DiscoverWeeklyBanner()
-
-            Spacer(modifier = Modifier.height(32.dp))
-
-            SectionHeader("Canciones para ti")
-
-            Spacer(modifier = Modifier.height(16.dp))
+            LaunchedEffect(selectedCategory) {
+                val data =
+                    if (selectedCategory == "Todo") {
+                        hashMapOf(
+                            "limit" to 20
+                        )
+                    } else {
+                        hashMapOf(
+                            "genre" to selectedCategory.lowercase(),
+                            "limit" to 20
+                        )
+                    }
+                FirebaseFunctions.getInstance().getHttpsCallable("getRecommendations").call(data)
+                    .addOnSuccessListener { result ->
+                        recomendaciones = result.data as List<Map<String, Any>>
+                    }
+                    .addOnFailureListener { e ->
+                        Log.e(
+                            "RECOMMENDATIONS_ERROR",
+                            e.message ?: "Error de recomendaciones",
+                            e
+                        )
+                    }
+            }
 
             when (selectedCategory) {
                 "Todo" -> {
-                    RecommendedCard("Summertime Sadness", "Lana del Rey", Color(0xFFB582C7))
-                    Spacer(modifier = Modifier.height(12.dp))
-                    RecommendedCard("Perfect", "Ed Sheeran", Color(0xFF1DB954))
+
+                    Spacer(modifier = Modifier.height(32.dp))
+                    DiscoverWeeklyBanner()
+                    Spacer(modifier = Modifier.height(32.dp))
+
+                    SectionHeader("Canciones para ti")
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    recomendaciones.forEach { song ->
+                        RecommendedCard(
+                            title = song["name"].toString(),
+                            artist = song["artist"].toString(),
+                            album = song["album"].toString(),
+                            spotifyId = song["id"].toString(),
+                            tint = Color(0xFF1DB954),
+                            context = context
+                        )
+                        Spacer(modifier = Modifier.height(12.dp))
+                    }
                 }
-                "Favoritos" -> {
-                    RecommendedCard("Flowers", "Miley Cyrus", Color(0xFFFF4081))
-                }
-                "Top" -> {
-                    RecommendedCard("As It Was", "Harry Styles", Color(0xFF03A9F4))
-                    Spacer(modifier = Modifier.height(12.dp))
-                    RecommendedCard("Blinding Lights", "The Weeknd", Color(0xFFFFC107))
-                }
-                "Artistas" -> {
-                    RecommendedCard("Lana del Rey", "Artista", Color.DarkGray)
-                    Spacer(modifier = Modifier.height(12.dp))
-                    RecommendedCard("Ed Sheeran", "Artista", Color.DarkGray)
-                }
-                "Géneros" -> {
-                    RecommendedCard("Pop", "Género", Color.DarkGray)
-                    Spacer(modifier = Modifier.height(12.dp))
-                    RecommendedCard("Rock", "Género", Color.DarkGray)
+                else -> {
+
+                    Spacer(modifier = Modifier.height(16.dp))
+                    SectionHeader("Canciones de " + selectedCategory + " para ti")
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    recomendaciones.forEach { song ->
+                        RecommendedCard(
+                            title = song["name"].toString(),
+                            artist = song["artist"].toString(),
+                            album = song["album"].toString(),
+                            spotifyId = song["id"].toString(),
+                            tint = Color(0xFF1DB954),
+                            context = context
+                        )
+                        Spacer(modifier = Modifier.height(12.dp))
+                    }
                 }
             }
-
             Spacer(modifier = Modifier.height(32.dp))
 
         }
@@ -326,7 +363,7 @@ fun PlaylistRow(title: String, artist: String, info: String) {
 }
 
 @Composable
-fun RecommendedCard(title: String, artist: String, tint: Color) {
+fun RecommendedCard(title: String, artist: String, album: String, spotifyId: String, tint: Color, context: android.content.Context) {
     Surface(
         modifier = Modifier
             .fillMaxWidth()
@@ -365,7 +402,7 @@ fun RecommendedCard(title: String, artist: String, tint: Color) {
                     maxLines = 1
                 )
                 Text(
-                    artist,
+                    "$artist • $album",
                     color = Color.Gray,
                     fontSize = 14.sp
                 )
@@ -376,7 +413,14 @@ fun RecommendedCard(title: String, artist: String, tint: Color) {
                     .align(Alignment.CenterVertically)
                     .padding(end = 16.dp)
                     .size(44.dp)
-                    .background(Color.White.copy(alpha = 0.05f), CircleShape),
+                    .background(Color.White.copy(alpha = 0.05f), CircleShape)
+                    .clickable {
+                        val intent = Intent(Intent.ACTION_VIEW, Uri.parse(
+                                "https://open.spotify.com/track/$spotifyId"
+                            )
+                        )
+                        context.startActivity(intent)
+                    },
                 contentAlignment = Alignment.Center
             ) {
                 Icon(Icons.Default.PlayArrow, null, tint = Color.White)
