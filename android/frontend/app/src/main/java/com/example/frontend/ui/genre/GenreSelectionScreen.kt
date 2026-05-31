@@ -29,10 +29,29 @@ fun GenreSelectionScreen(
     onContinue: (List<String>) -> Unit = {}
 ) {
     val genres = listOf(
-        "Pop", "Rock", "Reggaetón", "Heavy Metal",
-        "Salsa", "Clásica", "Electrónica", "Hip-Hop",
-        "Jazz", "Indie", "K-Pop", "Metal Core"
+        "Acoustic", "Afrobeat", "Alt-rock","Alternative","Ambient","Anime",
+        "Black-metal","Bluegrass","Blues","Brazil","Breakbeat","British",
+        "Cantopop","Chicago-house","Children","Chill","Classical","Club","Comedy",
+        "Country","Dance","Dancehall","Death-metal","Deep-house","Detroit-techno","Cisco",
+        "Disney","Drum-and-bass","Dub","Dubstep","Edm","Electro","Electronic",
+        "Emo","Folk","Forro","French","Funk","Garage","German","Gospel","Goth",
+        "Grindcore","Groove","Grunge","Guitar","Happy","Hard-rock","Hardcore",
+        "Hardstyle","Heavy-metal","Hip-hop","Honky-tonk","House","Idm","Indian",
+        "Indie","Indie-pop","Industrial","Iranian","J-dance","J-idol","J-pop",
+        "J-rock","Jazz","K-pop","Kids","Latin","Latino","Malay","Mandopop","Metal",
+        "Metalcore","Minimal-techno","Mpb","New-age","Opera","Pagode","Party","Piano",
+        "Pop","Pop-film","Power-pop","Progressive-house","Psych-rock","Punk","Punk-rock",
+        "r-n-b","Reggae","Reggaeton","Rock","Rock-n-Roll","Rockabilly", "Romance",
+        "Sad","Salsa","Samba","Sertanejo","Show-tunes","Singer-songwriter",
+        "Ska","Sleep","Songwriter","Soul","Spanish","Study","Swedish","Synth-pop",
+        "Tango","Techno","Trance","Trip-hop","Turkish","World-music"
     )
+    var searchText by remember { mutableStateOf("") }
+
+    val filteredGenres = genres.filter {
+        it.contains(searchText, ignoreCase = true)
+    }
+
     val selectedGenres = remember { mutableStateListOf<String>() }
 
     val bgColor = Color(0xFF0D1612)
@@ -105,6 +124,29 @@ fun GenreSelectionScreen(
 
                 Spacer(modifier = Modifier.height(16.dp))
 
+                OutlinedTextField(
+                    value = searchText,
+                    onValueChange = { searchText = it },
+                    modifier = Modifier.fillMaxWidth(),
+                    placeholder = {
+                        Text(
+                            "Buscar género...",
+                            color = Color.Gray
+                        )
+                    },
+                    singleLine = true,
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedTextColor = Color.White,
+                        unfocusedTextColor = Color.White,
+                        focusedBorderColor = Color(0xFF913AA1),
+                        unfocusedBorderColor = Color(0xFF383838),
+                        cursorColor = Color.White
+                    ),
+                    shape = RoundedCornerShape(12.dp)
+                )
+
+                Spacer(modifier = Modifier.height(16.dp))
+
                 LazyVerticalGrid(
                     columns = GridCells.Fixed(2),
                     contentPadding = PaddingValues(bottom = 8.dp),
@@ -112,8 +154,8 @@ fun GenreSelectionScreen(
                     verticalArrangement = Arrangement.spacedBy(12.dp),
                     modifier = Modifier.weight(1f, fill = false)
                 ) {
-                    items(genres.size) { index ->
-                        val genre = genres[index]
+                    items(filteredGenres.size) { index ->
+                        val genre = filteredGenres[index]
                         val isSelected = selectedGenres.contains(genre)
                         GenreCard(
                             genre = genre,
