@@ -1,11 +1,15 @@
 package com.proyecto;
 
-import org.neo4j.driver.*;
-
 import java.io.BufferedReader;
 import java.io.FileReader;
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
 
+import org.neo4j.driver.AuthTokens;
+import org.neo4j.driver.Driver;
+import org.neo4j.driver.GraphDatabase;
+import org.neo4j.driver.Session;
+import org.neo4j.driver.SessionConfig;
 import static org.neo4j.driver.Values.parameters;
 
 /**
@@ -87,6 +91,10 @@ public class Neo4jManager implements AutoCloseable {
                 double popularity = parseDouble(fila.get("popularity"));
                 double danceability = parseDouble(fila.get("danceability"));
                 double energy = parseDouble(fila.get("energy"));
+                double valence = parseDouble(fila.get("valence"));
+                double acousticness = parseDouble(fila.get("acousticness"));
+                double instrumentalness = parseDouble(fila.get("instrumentalness"));
+                double tempo = parseDouble(fila.get("tempo"));
 
                 // Validar datos mínimos
                 if (trackId.isEmpty() || artist.isEmpty()) {
@@ -94,72 +102,41 @@ public class Neo4jManager implements AutoCloseable {
                 }
 
                 session.executeWrite(tx -> {
-
-                    // Nodo canción
                     tx.run(
-                            """
-                            MERGE (t:Track {id: $id})
-                            SET t.name = $name,
-                                t.album = $album,
-                                t.popularity = $popularity,
-                                t.danceability = $danceability,
-                                t.energy = $energy
-                            """,
-                            parameters(
-                                    "id", trackId,
-                                    "name", trackName,
-                                    "album", album,
-                                    "popularity", popularity,
-                                    "danceability", danceability,
-                                    "energy", energy
+                        """
+                        MERGE (t:Track {id:$id})
+                        SET
+                            t.name = $name,
+                            t.album = $album,
+                            t.popularity = $popularity,
+                            t.danceability = $danceability,
+                            t.energy = $energy,
+                            t.valence = $valence,
+                            t.acousticness = $acousticness,
+                            t.instrumentalness = $instrumentalness,
+                            t.tempo = $tempo
+
+                        MERGE (a:Artist {name:$artist})
+                        MERGE (t)-[:PERFORMED_BY]->(a)
+
+                        MERGE (g:Genre {name:$genre})
+                        MERGE (t)-[:HAS_GENRE]->(g)
+                        """,
+                        parameters(
+                                "id", trackId,
+                                "name", trackName,
+                                "album", album,
+                                "popularity", popularity,
+                                "danceability", danceability,
+                                "energy", energy,
+                                "valence", valence,
+                                "acousticness", acousticness,
+                                "instrumentalness", instrumentalness,
+                                "tempo", tempo,
+                                "artist", artist,
+                                "genre", genre
                             )
                     );
-
-                    // Nodo artista
-                    tx.run(
-                            """
-                            MERGE (a:Artist {name: $artist})
-                            """,
-                            parameters("artist", artist)
-                    );
-
-                    // Relación artista
-                    tx.run(
-                            """
-                            MATCH (t:Track {id: $trackId})
-                            MATCH (a:Artist {name: $artist})
-                            MERGE (t)-[:PERFORMED_BY]->(a)
-                            """,
-                            parameters(
-                                    "trackId", trackId,
-                                    "artist", artist
-                            )
-                    );
-
-                    // Nodo género
-                    if (!genre.isEmpty()) {
-
-                        tx.run(
-                                """
-                                MERGE (g:Genre {name: $genre})
-                                """,
-                                parameters("genre", genre)
-                        );
-
-                        // Relación género
-                        tx.run(
-                                """
-                                MATCH (t:Track {id: $trackId})
-                                MATCH (g:Genre {name: $genre})
-                                MERGE (t)-[:HAS_GENRE]->(g)
-                                """,
-                                parameters(
-                                        "trackId", trackId,
-                                        "genre", genre
-                                )
-                        );
-                    }
-
                     return null;
                 });
 

@@ -18,7 +18,7 @@ public class Main {
         String password = "hu5iom_sl69EXx05ribA3ysQLpNycIXs_VasdwAOvYE";
 
         // Rutas de archivos CSV
-        String rutaDatos = "demo\\src\\main\\java\\com\\proyecto\\dataset.csv";
+        String rutaDatos = "src\\main\\java\\com\\proyecto\\dataset.csv";
 
         try (Neo4jManager manager = new Neo4jManager(uri, user, password)) {
 
