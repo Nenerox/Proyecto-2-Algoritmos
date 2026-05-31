@@ -16,6 +16,7 @@ import com.example.frontend.ui.home.HomeScreen
 import com.example.frontend.ui.home.SearchScreen
 import com.example.frontend.ui.profile.ProfileScreen
 import com.example.frontend.ui.profile.AboutUsScreen
+import com.example.frontend.ui.favorites.FavoriteSongsScreen
 import com.example.frontend.ui.form.MoodFormScreen
 import com.example.frontend.ui.form.MoodFormData
 import androidx.compose.material3.Text
@@ -144,7 +145,8 @@ fun SymphonixApp() {
             HomeScreen(
                 onProfileClick = { navController.navigate("profile") },
                 onSearchClick = { navController.navigate("search") },
-                onMoodFormClick = { navController.navigate("mood_form") }
+                onMoodFormClick = { navController.navigate("mood_form") },
+                onFavoritesClick = { navController.navigate("favorites") }
             )
         }
         composable("mood_form") {
@@ -176,6 +178,21 @@ fun SymphonixApp() {
                 onTabSelected = { index ->
                     when (index) {
                         0 -> navController.navigate("home")
+                        1 -> { /* Ya estamos aquí */ }
+                        2 -> navController.navigate("favorites")
+                        3 -> navController.navigate("profile")
+                    }
+                }
+            )
+        }
+        composable("favorites") {
+            FavoriteSongsScreen(
+                onBack = { navController.popBackStack() },
+                onTabSelected = { index ->
+                    when (index) {
+                        0 -> navController.navigate("home")
+                        1 -> navController.navigate("mood_form")
+                        2 -> { /* Ya estamos aquí */ }
                         3 -> navController.navigate("profile")
                     }
                 }
@@ -206,6 +223,8 @@ fun SymphonixApp() {
                 favoriteGenres = favoriteGenres,
                 onBack = { navController.popBackStack() },
                 onHomeClick = { navController.navigate("home") },
+                onMoodFormClick = { navController.navigate("mood_form") },
+                onFavoritesClick = { navController.navigate("favorites") },
                 onAboutUsClick = { navController.navigate("about_us") },
                 onLogout = {
                     auth.signOut()

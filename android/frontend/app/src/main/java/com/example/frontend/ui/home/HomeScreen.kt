@@ -25,14 +25,20 @@ import com.google.firebase.auth.FirebaseAuth
 
 @Composable
 fun HomeScreen(
+    favoriteGenres: List<String> = listOf("Pop", "Rock", "Reggaetón", "Heavy Metal"),
     onProfileClick: () -> Unit = {},
     onSearchClick: () -> Unit = {},
-    onMoodFormClick: () -> Unit = {}
-) {
+    onMoodFormClick: () -> Unit = {},
+    onFavoritesClick: () -> Unit = {}
+)
+
+{
     val bgColor = Color(0xFF121212) // Un negro más profundo y moderno
     val white = Color(0xFFFFFFFF)
     val accentColor = Color(0xFFB582C7)
     val currentUser = FirebaseAuth.getInstance().currentUser
+
+
 
     val username =
         currentUser?.displayName
@@ -59,6 +65,7 @@ fun HomeScreen(
                         when (it) {
                             0 -> { /* Home */ }
                             1 -> onMoodFormClick()
+                            2 -> onFavoritesClick()
                             3 -> onProfileClick()
                             else -> { /* TODO: Other tabs */ }
                         }
@@ -130,7 +137,7 @@ fun HomeScreen(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(10.dp)
             ) {
-                val filters = listOf("Todo", "Favoritos", "Top", "Artistas", "Géneros")
+                val filters = listOf("Principal", favoriteGenres)
                 items(filters) { filter ->
                     val isSelected = filter == selectedCategory
                     Surface(
@@ -189,16 +196,6 @@ fun HomeScreen(
 
             Spacer(modifier = Modifier.height(32.dp))
 
-            SectionHeader("Listas de reproducción")
-
-            Spacer(modifier = Modifier.height(16.dp))
-            
-            Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
-                PlaylistRow("Starlit Reverie", "Budiarti", "8 Canciones")
-                PlaylistRow("Midnight Confessions", "Lana del Rey", "12 Canciones")
-            }
-            
-            Spacer(modifier = Modifier.height(20.dp))
         }
     }
 }
@@ -433,7 +430,7 @@ fun SymphonixBottomBar(
     }
 }
 
-@Preview(showBackground = true)
+@Preview
 @Composable
 fun HomeScreenPreview() {
     HomeScreen()

@@ -36,7 +36,13 @@ fun MoodFormScreen(
 ) {
     val bgColor = Color(0xFF121212)
     val accentColor = Color(0xFF1DB954)
-    val purpleAccent = Color(0xFFB582C7)
+    
+    // Paletas extraídas de GenreSelectionScreen
+    val paletteBlue = Color(0xFF5D7A8C)
+    val paletteGreen = Color(0xFF6B8C6D)
+    val palettePurple = Color(0xFF8C73AD)
+    val paletteRed = Color(0xFFAD7373)
+    val paletteCyan = Color(0xFF738C8C)
 
     var moodValue by remember { mutableIntStateOf(3) }
     var energy by remember { mutableFloatStateOf(5f) }
@@ -159,15 +165,16 @@ fun MoodFormScreen(
                         value = energy,
                         onValueChange = { energy = it },
                         valueRange = 0f..10f,
-                        steps = 8,
+                        steps = 9,
                         colors = SliderDefaults.colors(
                             thumbColor = Color.White,
-                            activeTrackColor = purpleAccent,
+                            activeTrackColor = palettePurple,
                             inactiveTrackColor = Color(0xFF2A2A2A)
                         )
                     )
                     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                        Text("1", color = Color.Gray, fontSize = 12.sp)
+                        Text("0", color = Color.Gray, fontSize = 12.sp)
+                        Text("5", color = Color.Gray, fontSize = 12.sp)
                         Text("10", color = Color.Gray, fontSize = 12.sp)
                     }
                 }
@@ -181,15 +188,16 @@ fun MoodFormScreen(
                         value = danceability,
                         onValueChange = { danceability = it },
                         valueRange = 0f..10f,
-                        steps = 8,
+                        steps = 9,
                         colors = SliderDefaults.colors(
                             thumbColor = Color.White,
-                            activeTrackColor = accentColor,
+                            activeTrackColor = paletteGreen,
                             inactiveTrackColor = Color(0xFF2A2A2A)
                         )
                     )
                     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                        Text("1", color = Color.Gray, fontSize = 12.sp)
+                        Text("0", color = Color.Gray, fontSize = 12.sp)
+                        Text("5", color = Color.Gray, fontSize = 12.sp)
                         Text("10", color = Color.Gray, fontSize = 12.sp)
                     }
                 }
@@ -203,7 +211,12 @@ fun MoodFormScreen(
                     value = instrumentalness,
                     onValueChange = { instrumentalness = it },
                     valueRange = 0f..10f,
-                    steps = 8
+                    steps = 9,
+                    colors = SliderDefaults.colors(
+                        thumbColor = Color.White,
+                        activeTrackColor = paletteBlue,
+                        inactiveTrackColor = Color(0xFF2A2A2A)
+                    )
                 )
 
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
@@ -221,7 +234,12 @@ fun MoodFormScreen(
                     value = acousticness,
                     onValueChange = { acousticness = it },
                     valueRange = 0f..10f,
-                    steps = 8
+                    steps = 9,
+                    colors = SliderDefaults.colors(
+                        thumbColor = Color.White,
+                        activeTrackColor = paletteRed,
+                        inactiveTrackColor = Color(0xFF2A2A2A)
+                    )
                 )
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                     Text("Electrónico", color = Color.Gray, fontSize = 12.sp)
@@ -238,7 +256,12 @@ fun MoodFormScreen(
                     value = tempoPreference,
                     onValueChange = { tempoPreference = it },
                     valueRange = 0f..10f,
-                    steps = 8
+                    steps = 9,
+                    colors = SliderDefaults.colors(
+                        thumbColor = Color.White,
+                        activeTrackColor = paletteCyan,
+                        inactiveTrackColor = Color(0xFF2A2A2A)
+                    )
                 )
 
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {

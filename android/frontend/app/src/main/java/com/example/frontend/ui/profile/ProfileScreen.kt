@@ -31,6 +31,8 @@ fun ProfileScreen(
     favoriteGenres: List<String> = listOf("Pop", "Rock", "Reggaetón", "Heavy Metal"),
     onBack: () -> Unit = {},
     onHomeClick: () -> Unit = {},
+    onMoodFormClick: () -> Unit = {},
+    onFavoritesClick: () -> Unit = {},
     onAboutUsClick: () -> Unit = {},
     onLogout: () -> Unit = {}
 ) {
@@ -49,7 +51,14 @@ fun ProfileScreen(
             ) {
                 SymphonixBottomBar(
                     selectedIndex = 3,
-                    onTabSelected = { if (it == 0) onHomeClick() },
+                    onTabSelected = { index ->
+                        when (index) {
+                            0 -> onHomeClick()
+                            1 -> onMoodFormClick()
+                            2 -> onFavoritesClick()
+                            3 -> { /* Ya estamos aquí */ }
+                        }
+                    },
                     white = Color.White
                 )
             }
