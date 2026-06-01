@@ -76,15 +76,18 @@ exports.getRecommendations = functions.https.onCall(async (request) => {
             a.name AS artist,
             t.album AS album,
             t.popularity AS popularity,
+
+            t.energy AS energy,
+            t.danceability AS danceability,
+            t.instrumentalness AS instrumentalness,
+            t.acousticness AS acousticness,
+            t.tempo AS tempo,
+
             score
 
         ORDER BY score ASC
         LIMIT toInteger($limit)
         `;
-
-        console.log("UID:", uid);
-        console.log("GENRE:", genre);
-        console.log("LIMIT:", limit);
 
         const result = await session.run(
             query,
@@ -94,15 +97,6 @@ exports.getRecommendations = functions.https.onCall(async (request) => {
                 limit: neo4j.int(limit)
             }
         );
-        console.log(
-        "RESULTADOS:",
-        result.records.length
-        );
-        if (result.records.length > 0) {
-        console.log(
-            result.records[0].toObject()
-        );
-}
 
         return result.records.map(record => ({
             id: record.get("id"),
@@ -110,6 +104,13 @@ exports.getRecommendations = functions.https.onCall(async (request) => {
             artist: record.get("artist"),
             album: record.get("album"),
             popularity: record.get("popularity"),
+
+            energy: record.get("energy"),
+            danceability: record.get("danceability"),
+            instrumentalness: record.get("instrumentalness"),
+            acousticness: record.get("acousticness"),
+            tempo: record.get("tempo"),
+
             score: record.get("score")
         }));
 
