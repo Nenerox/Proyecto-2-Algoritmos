@@ -38,7 +38,9 @@ fun HomeScreen(
     onSearchClick: () -> Unit = {},
     onMoodFormClick: () -> Unit = {},
     onFavoritesClick: () -> Unit = {},
-    onSongClick: () -> Unit = {}
+    onSongClick: () -> Unit = {},
+    recomendaciones: List<Map<String, Any>>,
+    onRecomendacionesLoaded: (List<Map<String, Any>>) -> Unit
 )
 
 {
@@ -165,10 +167,6 @@ fun HomeScreen(
                 }
             }
 
-            var recomendaciones by remember {
-                mutableStateOf<List<Map<String, Any>>>(emptyList())
-            }
-
             LaunchedEffect(selectedCategory) {
                 val data =
                     if (selectedCategory == "Todo") {
@@ -183,14 +181,11 @@ fun HomeScreen(
                     }
                 FirebaseFunctions.getInstance().getHttpsCallable("getRecommendations").call(data)
                     .addOnSuccessListener { result ->
-                        recomendaciones = result.data as List<Map<String, Any>>
+                        val data = result.data as List<Map<String, Any>>
+                        onRecomendacionesLoaded(data)
                     }
                     .addOnFailureListener { e ->
-                        Log.e(
-                            "RECOMMENDATIONS_ERROR",
-                            e.message ?: "Error de recomendaciones",
-                            e
-                        )
+                        Log.e("RECOMMENDATIONS_ERROR", e.message ?: "Error de recomendaciones", e)
                     }
             }
 
@@ -541,5 +536,8 @@ fun SymphonixBottomBar(
 @Preview
 @Composable
 fun HomeScreenPreview() {
-    HomeScreen()
+    HomeScreen(
+        recomendaciones = emptyList(),
+        onRecomendacionesLoaded = {}
+    )
 }

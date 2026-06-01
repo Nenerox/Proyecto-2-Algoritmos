@@ -44,6 +44,9 @@ fun SymphonixApp() {
     // Lista de géneros favoritos compartida
     var favoriteGenres by remember { mutableStateOf(listOf<String>()) }
 
+    //lista de canciones recomendadas de la ultima pagina de generos visitada
+    var recomendaciones by remember { mutableStateOf<List<Map<String, Any>>>(emptyList()) }
+
     val startDestination =
         if (auth.currentUser != null) "home"
         else "login"
@@ -146,6 +149,8 @@ fun SymphonixApp() {
             }
             HomeScreen(
                 favoriteGenres = favoriteGenres,
+                recomendaciones = recomendaciones,
+                onRecomendacionesLoaded = { recomendaciones = it },
                 onProfileClick = { navController.navigate("profile") },
                 onSearchClick = { navController.navigate("search") },
                 onMoodFormClick = { navController.navigate("mood_form") },
@@ -155,6 +160,7 @@ fun SymphonixApp() {
         }
         composable("song_discover") {
             SongScreen(
+                recomendaciones = recomendaciones,
                 onTabSelected = { index ->
                     when (index) {
                         0 -> navController.navigate("home")
