@@ -20,6 +20,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
+import coil.compose.AsyncImage
+import coil.request.ImageRequest
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -31,6 +35,7 @@ data class FavoriteSong(
     val artist: String,
     val duration: String,
     val color: Color,
+    val imageUrl: String? = null,
     val energy: Float = 0.5f,
     val danceability: Float = 0.5f,
     val instrumentalness: Float = 0.5f,
@@ -53,16 +58,16 @@ fun FavoriteSongsScreen(
 
     val favoriteSongs = remember {
         listOf(
-            FavoriteSong("1", "Summertime Sadness", "Lana Del Rey", "4:25", Color(0xFFB582C7), 0.6f, 0.4f, 0.1f, 0.3f, 0.4f),
-            FavoriteSong("2", "Blinding Lights", "The Weeknd", "3:20", Color(0xFFFFC107), 0.8f, 0.7f, 0.0f, 0.1f, 0.8f),
-            FavoriteSong("3", "Starboy", "The Weeknd", "3:50", Color(0xFFE91E63), 0.7f, 0.8f, 0.0f, 0.1f, 0.9f),
-            FavoriteSong("4", "Perfect", "Ed Sheeran", "4:23", Color(0xFF1DB954), 0.4f, 0.3f, 0.0f, 0.7f, 0.3f),
-            FavoriteSong("5", "Flowers", "Miley Cyrus", "3:21", Color(0xFFFF4081), 0.7f, 0.7f, 0.0f, 0.2f, 0.6f),
-            FavoriteSong("6", "As It Was", "Harry Styles", "2:47", Color(0xFF03A9F4), 0.7f, 0.8f, 0.0f, 0.2f, 0.8f),
-            FavoriteSong("7", "Bohemian Rhapsody", "Queen", "5:55", Color(0xFF9C27B0), 0.5f, 0.3f, 0.1f, 0.4f, 0.4f),
-            FavoriteSong("8", "Rolling in the Deep", "Adele", "3:48", Color(0xFF795548), 0.7f, 0.5f, 0.0f, 0.2f, 0.5f),
-            FavoriteSong("9", "Yellow", "Coldplay", "4:29", Color(0xFFFFEB3B), 0.5f, 0.3f, 0.0f, 0.4f, 0.4f),
-            FavoriteSong("10", "Circles", "Post Malone", "3:35", Color(0xFF607D8B), 0.6f, 0.7f, 0.0f, 0.3f, 0.5f)
+            FavoriteSong("1", "Summertime Sadness", "Lana Del Rey", "4:25", Color(0xFFB582C7), null, 0.6f, 0.4f, 0.1f, 0.3f, 0.4f),
+            FavoriteSong("2", "Blinding Lights", "The Weeknd", "3:20", Color(0xFFFFC107), null, 0.8f, 0.7f, 0.0f, 0.1f, 0.8f),
+            FavoriteSong("3", "Starboy", "The Weeknd", "3:50", Color(0xFFE91E63), null, 0.7f, 0.8f, 0.0f, 0.1f, 0.9f),
+            FavoriteSong("4", "Perfect", "Ed Sheeran", "4:23", Color(0xFF1DB954), null, 0.4f, 0.3f, 0.0f, 0.7f, 0.3f),
+            FavoriteSong("5", "Flowers", "Miley Cyrus", "3:21", Color(0xFFFF4081), null, 0.7f, 0.7f, 0.0f, 0.2f, 0.6f),
+            FavoriteSong("6", "As It Was", "Harry Styles", "2:47", Color(0xFF03A9F4), null, 0.7f, 0.8f, 0.0f, 0.2f, 0.8f),
+            FavoriteSong("7", "Bohemian Rhapsody", "Queen", "5:55", Color(0xFF9C27B0), null, 0.5f, 0.3f, 0.1f, 0.4f, 0.4f),
+            FavoriteSong("8", "Rolling in the Deep", "Adele", "3:48", Color(0xFF795548), null, 0.7f, 0.5f, 0.0f, 0.2f, 0.5f),
+            FavoriteSong("9", "Yellow", "Coldplay", "4:29", Color(0xFFFFEB3B), null, 0.5f, 0.3f, 0.0f, 0.4f, 0.4f),
+            FavoriteSong("10", "Circles", "Post Malone", "3:35", Color(0xFF607D8B), null, 0.6f, 0.7f, 0.0f, 0.3f, 0.5f)
         )
     }
 
@@ -125,54 +130,6 @@ fun FavoriteSongsScreen(
                 }
             }
 
-            // Acciones Rápidas
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 24.dp, vertical = 20.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                // Botón Play All con degradado
-                Button(
-                    onClick = { /* Play all */ },
-                    modifier = Modifier
-                        .height(48.dp)
-                        .weight(1f)
-                        .shadow(8.dp, RoundedCornerShape(24.dp)),
-                    shape = RoundedCornerShape(24.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent),
-                    contentPadding = PaddingValues()
-                ) {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .background(
-                                Brush.linearGradient(
-                                    listOf(Color(0xFF5A107C), Color(0xFF913AA1))
-                                )
-                            ),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Icon(Icons.Default.PlayArrow, null, tint = Color.Black)
-                            Spacer(Modifier.width(8.dp))
-                            Text("Reproducir todo", color = Color.Black, fontWeight = FontWeight.Bold)
-                        }
-                    }
-                }
-                
-                Spacer(Modifier.width(16.dp))
-                
-                IconButton(
-                    onClick = { /* Shuffle */ },
-                    modifier = Modifier
-                        .size(48.dp)
-                        .background(Color(0xFF252525), CircleShape)
-                ) {
-                    Icon(Icons.Default.Shuffle, null, tint = accentColor)
-                }
-            }
-
             // Lista de canciones
             LazyColumn(
                 modifier = Modifier
@@ -211,6 +168,28 @@ fun FavoriteSongItem(
     song: FavoriteSong,
     onMoreClick: () -> Unit = {}
 ) {
+    // LLAVE: Reseteamos la imagen cuando cambia el ID de la canción
+    var resolvedImageUrl by remember(song.id, song.imageUrl) { mutableStateOf(song.imageUrl) }
+
+    LaunchedEffect(song.id, song.title, song.artist, song.imageUrl) {
+        if (song.imageUrl == null) {
+            kotlin.concurrent.thread {
+                try {
+                    val query = android.net.Uri.encode("${song.artist} ${song.title}")
+                    val searchUrl = "https://itunes.apple.com/search?term=$query&entity=song&limit=1"
+                    val response = java.net.URL(searchUrl).readText()
+                    val match = "\"artworkUrl100\":\"(.*?)\"".toRegex().find(response)
+                    val url = match?.groupValues?.get(1)?.replace("100x100bb", "400x400bb")
+                    if (url != null) {
+                        resolvedImageUrl = url
+                    }
+                } catch (e: Exception) {
+                    // Silently fail, fallback to generative art
+                }
+            }
+        }
+    }
+
     Surface(
         modifier = Modifier
             .fillMaxWidth()
@@ -232,12 +211,36 @@ fun FavoriteSongItem(
                     .background(song.color.copy(alpha = 0.2f)),
                 contentAlignment = Alignment.Center
             ) {
-                Icon(
-                    Icons.Default.MusicNote, 
-                    null, 
-                    tint = song.color,
-                    modifier = Modifier.size(28.dp)
-                )
+                if (resolvedImageUrl != null) {
+                    AsyncImage(
+                        model = ImageRequest.Builder(LocalContext.current)
+                            .data(resolvedImageUrl)
+                            .crossfade(true)
+                            .build(),
+                        contentDescription = "Album Art",
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier.fillMaxSize()
+                    )
+                } else {
+                    // Arte Generativo basado en el ID para favoritos
+                    val hash = song.id.hashCode()
+                    val color1 = Color(0xFF000000 or (hash and 0xFFFFFF).toLong())
+                    val color2 = Color(0xFF000000 or ((hash shr 8) and 0xFFFFFF).toLong())
+                    
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(Brush.linearGradient(listOf(color1, color2))),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = song.title.take(1).uppercase(),
+                            color = Color.White.copy(alpha = 0.5f),
+                            fontSize = 20.sp,
+                            fontWeight = FontWeight.Black
+                        )
+                    }
+                }
             }
             
             Spacer(modifier = Modifier.width(16.dp))

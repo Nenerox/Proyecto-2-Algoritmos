@@ -17,6 +17,7 @@ import com.example.frontend.ui.home.SearchScreen
 import com.example.frontend.ui.profile.ProfileScreen
 import com.example.frontend.ui.profile.AboutUsScreen
 import com.example.frontend.ui.favorites.FavoriteSongsScreen
+import com.example.frontend.ui.song.SongScreen
 import com.example.frontend.ui.form.MoodFormScreen
 import com.example.frontend.ui.form.MoodFormData
 import androidx.compose.material3.Text
@@ -138,6 +139,8 @@ fun SymphonixApp() {
                                 .map { it.toString() }
                         if (genres.isEmpty()) {
                             navController.navigate("genre")
+                        } else {
+                            favoriteGenres = genres.map { it.replaceFirstChar { c -> c.uppercase() } }
                         }
                     }
             }
@@ -146,7 +149,20 @@ fun SymphonixApp() {
                 onProfileClick = { navController.navigate("profile") },
                 onSearchClick = { navController.navigate("search") },
                 onMoodFormClick = { navController.navigate("mood_form") },
-                onFavoritesClick = { navController.navigate("favorites") }
+                onFavoritesClick = { navController.navigate("favorites") },
+                onSongClick = { navController.navigate("song_discover") }
+            )
+        }
+        composable("song_discover") {
+            SongScreen(
+                onTabSelected = { index ->
+                    when (index) {
+                        0 -> navController.navigate("home")
+                        1 -> navController.navigate("mood_form")
+                        2 -> navController.navigate("favorites")
+                        3 -> navController.navigate("profile")
+                    }
+                }
             )
         }
         composable("mood_form") {

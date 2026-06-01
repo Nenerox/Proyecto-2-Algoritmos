@@ -27,6 +27,9 @@ import android.content.Intent
 import android.net.Uri
 import android.util.Log
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.layout.ContentScale
+import coil.compose.AsyncImage
+import coil.request.ImageRequest
 
 @Composable
 fun HomeScreen(
@@ -34,7 +37,8 @@ fun HomeScreen(
     onProfileClick: () -> Unit = {},
     onSearchClick: () -> Unit = {},
     onMoodFormClick: () -> Unit = {},
-    onFavoritesClick: () -> Unit = {}
+    onFavoritesClick: () -> Unit = {},
+    onSongClick: () -> Unit = {}
 )
 
 {
@@ -206,8 +210,10 @@ fun HomeScreen(
                             artist = song["artist"].toString(),
                             album = song["album"].toString(),
                             spotifyId = song["id"].toString(),
+                            imageUrl = song["image_url"]?.toString(),
                             tint = Color(0xFF1DB954),
-                            context = context
+                            context = context,
+                            onClick = onSongClick
                         )
                         Spacer(modifier = Modifier.height(12.dp))
                     }
@@ -224,8 +230,10 @@ fun HomeScreen(
                             artist = song["artist"].toString(),
                             album = song["album"].toString(),
                             spotifyId = song["id"].toString(),
+                            imageUrl = song["image_url"]?.toString(),
                             tint = Color(0xFF1DB954),
-                            context = context
+                            context = context,
+                            onClick = onSongClick
                         )
                         Spacer(modifier = Modifier.height(12.dp))
                     }
@@ -363,11 +371,43 @@ fun PlaylistRow(title: String, artist: String, info: String) {
 }
 
 @Composable
-fun RecommendedCard(title: String, artist: String, album: String, spotifyId: String, tint: Color, context: android.content.Context) {
+fun RecommendedCard(
+    title: String, 
+    artist: String, 
+    album: String, 
+    spotifyId: String, 
+    imageUrl: String? = null,
+    tint: Color, 
+    context: android.content.Context,
+    onClick: () -> Unit = {}
+) {
+    // LLAVE: Usamos title, artist y imageUrl como claves para que el estado se resetee
+    var resolvedImageUrl by remember(title, artist, imageUrl) { mutableStateOf(imageUrl) }
+
+    LaunchedEffect(title, artist, imageUrl) {
+        if (imageUrl == null) {
+            kotlin.concurrent.thread {
+                try {
+                    val query = Uri.encode("$artist $title")
+                    val searchUrl = "https://itunes.apple.com/search?term=$query&entity=song&limit=1"
+                    val response = java.net.URL(searchUrl).readText()
+                    val match = "\"artworkUrl100\":\"(.*?)\"".toRegex().find(response)
+                    val url = match?.groupValues?.get(1)?.replace("100x100bb", "600x600bb")
+                    if (url != null) {
+                        resolvedImageUrl = url
+                    }
+                } catch (e: Exception) {
+                    Log.e("ITUNES_ERROR", "Error fetching image: ${e.message}")
+                }
+            }
+        }
+    }
+
     Surface(
         modifier = Modifier
             .fillMaxWidth()
-            .height(110.dp),
+            .height(110.dp)
+            .clickable { onClick() },
         color = Color(0xFF1E1E1E),
         shape = RoundedCornerShape(20.dp),
         border = BorderStroke(0.5.dp, Color.White.copy(alpha = 0.1f))
@@ -380,12 +420,36 @@ fun RecommendedCard(title: String, artist: String, album: String, spotifyId: Str
                     .background(tint.copy(alpha = 0.2f)),
                 contentAlignment = Alignment.Center
             ) {
-                Icon(
-                    Icons.Default.MusicVideo,
-                    null,
-                    tint = tint,
-                    modifier = Modifier.size(40.dp)
-                )
+                if (resolvedImageUrl != null) {
+                    AsyncImage(
+                        model = ImageRequest.Builder(LocalContext.current)
+                            .data(resolvedImageUrl)
+                            .crossfade(true)
+                            .build(),
+                        contentDescription = "Album Art",
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier.fillMaxSize()
+                    )
+                } else {
+                    // Arte Generativo basado en el ID
+                    val hash = spotifyId.hashCode()
+                    val color1 = Color(0xFF000000 or (hash and 0xFFFFFF).toLong())
+                    val color2 = Color(0xFF000000 or ((hash shr 8) and 0xFFFFFF).toLong())
+                    
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(Brush.linearGradient(listOf(color1, color2))),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = title.take(1).uppercase(),
+                            color = Color.White.copy(alpha = 0.5f),
+                            fontSize = 40.sp,
+                            fontWeight = FontWeight.Black
+                        )
+                    }
+                }
             }
 
             Column(

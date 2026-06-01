@@ -79,13 +79,13 @@ fun MoodFormScreen(
         ) {
             // Header estilo Home
             Text(
-                text = "Tu Registro Diario",
+                text = "Descubre ahora",
                 color = Color.White,
                 fontSize = 28.sp,
                 fontWeight = FontWeight.ExtraBold
             )
             Text(
-                text = "Cuéntanos cómo te sientes hoy",
+                text = "Cuéntanos cómo te sientes hoy y obtiene la mejor recomendación",
                 color = Color.Gray,
                 fontSize = 14.sp,
                 modifier = Modifier.padding(top = 4.dp)
