@@ -59,18 +59,28 @@ data class SwipeableSong(
 fun SongScreen(
     onTabSelected: (Int) -> Unit = {},
     onLike: (SwipeableSong) -> Unit = {},
-    onDislike: (SwipeableSong) -> Unit = {}
+    onDislike: (SwipeableSong) -> Unit = {},
+    recomendaciones: List<Map<String, Any>>,
 ) {
     val bgColor = Color(0xFF121212)
     
-    // Lista de ejemplo
-    val songs = remember {
-        mutableStateListOf(
-            SwipeableSong("1", "Summertime Sadness", "Lana Del Rey", "Born to Die", "4cOdK9sSTu1Y9BTmZ9I73o", null, 0.6f, 0.4f, 0.1f, 0.3f, 0.4f),
-            SwipeableSong("2", "Blinding Lights", "The Weeknd", "After Hours", "0VjIj9HpC3oTzopq98I9S0", null, 0.8f, 0.7f, 0.0f, 0.1f, 0.8f),
-            SwipeableSong("3", "Starboy", "The Weeknd", "Starboy", "7MXVkv9YvqcS2SQU97S4S7", null, 0.7f, 0.8f, 0.0f, 0.1f, 0.9f),
-            SwipeableSong("4", "Perfect", "Ed Sheeran", "Divide", "0tgVpS3mghpB7Yv3tobP1Z", null, 0.4f, 0.3f, 0.0f, 0.7f, 0.3f)
-        )
+    // Lista de canciones
+    val songs = remember(recomendaciones) {
+        recomendaciones.reversed().map {
+            SwipeableSong(
+                id = it["id"].toString(),
+                title = it["name"].toString(),
+                artist = it["artist"].toString(),
+                album = it["album"].toString(),
+                spotifyId = it["id"].toString(),
+
+                energy = (it["energy"] as Number).toFloat(),
+                danceability = (it["danceability"] as Number).toFloat(),
+                instrumentalness = (it["instrumentalness"] as Number).toFloat(),
+                acousticness = (it["acousticness"] as Number).toFloat(),
+                tempo = ((it["tempo"] as Number).toFloat() / 250f).coerceIn(0f, 1f)
+            )
+        }.toMutableStateList()
     }
 
     var showAnalysis by remember { mutableStateOf(false) }
@@ -361,5 +371,5 @@ fun SongAnalysisContent(song: SwipeableSong) {
 @Preview(showBackground = true)
 @Composable
 fun SongScreenPreview() {
-    SongScreen()
+    SongScreen(recomendaciones = emptyList())
 }
