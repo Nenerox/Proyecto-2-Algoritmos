@@ -89,6 +89,13 @@ exports.getFavorites = functions.https.onCall(async (request) => {
 
 exports.removeFavorite = functions.https.onCall(async (request) => {
 
+    if (!request.auth) {
+        throw new functions.https.HttpsError(
+            "unauthenticated",
+            "Usuario no autenticado"
+        );
+    }   
+
     const uid = request.auth.uid;
     const trackId = request.data.trackId;
 
