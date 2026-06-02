@@ -1,5 +1,7 @@
 package com.example.frontend.ui.favorites
 
+import android.content.Intent
+import android.net.Uri
 import android.util.Log
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
@@ -20,7 +22,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -34,14 +35,9 @@ data class FavoriteSong(
     val id: String,
     val title: String,
     val artist: String,
-    val duration: String,
+    val album: String,
     val color: Color,
-    val imageUrl: String? = null,
-    val energy: Float = 0.5f,
-    val danceability: Float = 0.5f,
-    val instrumentalness: Float = 0.5f,
-    val acousticness: Float = 0.5f,
-    val tempo: Float = 0.5f
+    val imageUrl: String? = null
 )
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -51,10 +47,7 @@ fun FavoriteSongsScreen(
     onTabSelected: (Int) -> Unit = {}
 ) {
     val bgColor = Color(0xFF121212)
-    
-    var selectedSongForDetails by remember { mutableStateOf<FavoriteSong?>(null) }
-    val sheetState = rememberModalBottomSheetState()
-    var showSheet by remember { mutableStateOf(false) }
+
     var isLoading by remember { mutableStateOf(true) }
 
     var favoriteSongs by remember { mutableStateOf(listOf<FavoriteSong>()) }
@@ -69,16 +62,11 @@ fun FavoriteSongsScreen(
                     favoriteSongs = data.filterIsInstance<Map<String, Any>>().map { item ->
                         FavoriteSong(
                             id = item["id"]?.toString() ?: "",
-                            title = item["name"]?.toString() ?: "Sin título",
-                            artist = item["artist"]?.toString() ?: "Artista desconocido",
-                            duration = "3:30", 
-                            color = Color(0xFF9C27B0), 
-                            imageUrl = null,
-                            energy = (item["energy"] as? Number)?.toFloat() ?: 0.5f,
-                            danceability = (item["danceability"] as? Number)?.toFloat() ?: 0.5f,
-                            instrumentalness = (item["instrumentalness"] as? Number)?.toFloat() ?: 0.5f,
-                            acousticness = (item["acousticness"] as? Number)?.toFloat() ?: 0.5f,
-                            tempo = (item["tempo"] as? Number)?.toFloat() ?: 0.5f
+                            title = item["name"]?.toString() ?: "",
+                            artist = item["artist"]?.toString() ?: "",
+                            album = item["album"]?.toString() ?: "",
+                            color = Color(0xFF9C27B0),
+                            imageUrl = null
                         )
                     }
                 }
@@ -98,8 +86,8 @@ fun FavoriteSongsScreen(
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(
-                            Icons.AutoMirrored.Filled.ArrowBack, 
-                            contentDescription = "Regresar", 
+                            Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = "Regresar",
                             tint = Color.White
                         )
                     }
@@ -175,10 +163,6 @@ fun FavoriteSongsScreen(
                     items(favoriteSongs) { song ->
                         FavoriteSongItem(
                             song = song,
-                            onMoreClick = {
-                                selectedSongForDetails = song
-                                showSheet = true
-                            },
                             onRemoveClick = {
                                 favoriteSongs = favoriteSongs.filter { it.id != song.id }
                                 FirebaseFunctions.getInstance()
@@ -194,28 +178,14 @@ fun FavoriteSongsScreen(
             }
         }
     }
-
-    if (showSheet && selectedSongForDetails != null) {
-        ModalBottomSheet(
-            onDismissRequest = { 
-                showSheet = false
-                selectedSongForDetails = null
-            },
-            sheetState = sheetState,
-            containerColor = Color(0xFF1E1E1E),
-            dragHandle = { BottomSheetDefaults.DragHandle(color = Color.Gray) }
-        ) {
-            selectedSongForDetails?.let { SongDetailsSheet(it) }
-        }
-    }
 }
 
 @Composable
 fun FavoriteSongItem(
     song: FavoriteSong,
-    onMoreClick: () -> Unit = {},
     onRemoveClick: () -> Unit = {}
 ) {
+    val context = LocalContext.current
     var resolvedImageUrl by remember(song.id, song.imageUrl) { mutableStateOf(song.imageUrl) }
 
     LaunchedEffect(song.id, song.title, song.artist, song.imageUrl) {
@@ -240,7 +210,12 @@ fun FavoriteSongItem(
     Surface(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable { /* Play song */ },
+            .clickable {
+
+                val intent = Intent(Intent.ACTION_VIEW, Uri.parse(
+                        "https://open.spotify.com/track/${song.id}"))
+                context.startActivity(intent)
+            },
         color = Color.Transparent,
         shape = RoundedCornerShape(16.dp) // Multiplo de 8
     ) {
@@ -300,7 +275,7 @@ fun FavoriteSongItem(
                     overflow = TextOverflow.Ellipsis
                 )
                 Text(
-                    text = song.artist,
+                    text = "${song.artist} • ${song.album}",
                     color = Color.Gray,
                     fontSize = 14.sp,
                     maxLines = 1,
@@ -309,12 +284,6 @@ fun FavoriteSongItem(
             }
             
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(
-                    text = song.duration,
-                    color = Color.Gray,
-                    fontSize = 12.sp,
-                    modifier = Modifier.padding(horizontal = 12.dp)
-                )
                 IconButton(onClick = onRemoveClick) {
                     Icon(
                         Icons.Default.Favorite, 
@@ -324,74 +293,8 @@ fun FavoriteSongItem(
                     )
                 }
                 Spacer(Modifier.width(8.dp))
-                IconButton(onClick = onMoreClick) {
-                    Icon(Icons.Default.MoreVert, null, tint = Color.Gray)
-                }
             }
         }
-    }
-}
-
-@Composable
-fun SongDetailsSheet(song: FavoriteSong) {
-    val paletteBlue = Color(0xFF5D7A8C)
-    val paletteGreen = Color(0xFF6B8C6D)
-    val palettePurple = Color(0xFF8C73AD)
-    val paletteRed = Color(0xFFAD7373)
-    val paletteCyan = Color(0xFF738C8C)
-
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(24.dp)
-            .padding(bottom = 32.dp)
-    ) {
-        Text(
-            text = "Análisis Musical",
-            color = Color.White,
-            fontSize = 20.sp,
-            fontWeight = FontWeight.Bold,
-            modifier = Modifier.padding(bottom = 24.dp)
-        )
-
-        AttributeBar("Energía", song.energy, palettePurple)
-        AttributeBar("Bailabilidad", song.danceability, paletteGreen)
-        AttributeBar("Instrumental", song.instrumentalness, paletteBlue)
-        AttributeBar("Acústico", song.acousticness, paletteRed)
-        AttributeBar("Tempo / Ritmo", song.tempo, paletteCyan)
-        
-        Spacer(Modifier.height(16.dp))
-        
-        Text(
-            text = "Basado en tus preferencias de Symphonix",
-            color = Color.Gray,
-            fontSize = 12.sp,
-            modifier = Modifier.fillMaxWidth(),
-            textAlign = TextAlign.Center
-        )
-    }
-}
-
-@Composable
-fun AttributeBar(label: String, value: Float, color: Color) {
-    Column(modifier = Modifier.padding(vertical = 8.dp)) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            Text(label, color = Color.LightGray, fontSize = 14.sp)
-            Text("${(value * 100).toInt()}%", color = Color.White, fontSize = 14.sp, fontWeight = FontWeight.Bold)
-        }
-        Spacer(Modifier.height(8.dp))
-        LinearProgressIndicator(
-            progress = { value },
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(8.dp)
-                .clip(CircleShape),
-            color = color,
-            trackColor = Color(0xFF2A2A2A)
-        )
     }
 }
 
