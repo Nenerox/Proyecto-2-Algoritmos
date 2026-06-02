@@ -2,9 +2,12 @@ package com.example.frontend
 
 import android.os.Bundle
 import android.util.Log
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.material3.Text
 import androidx.compose.runtime.*
+import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
@@ -18,12 +21,11 @@ import com.example.frontend.ui.profile.ProfileScreen
 import com.example.frontend.ui.profile.AboutUsScreen
 import com.example.frontend.ui.favorites.FavoriteSongsScreen
 import com.example.frontend.ui.song.SongScreen
+import com.example.frontend.ui.song.SwipeableSong
 import com.example.frontend.ui.form.MoodFormScreen
-import com.example.frontend.ui.form.MoodFormData
-import androidx.compose.material3.Text
-import com.google.firebase.functions.FirebaseFunctions
 import com.google.firebase.auth.FirebaseAuth
-import android.widget.Toast
+import com.google.firebase.auth.UserProfileChangeRequest
+import com.google.firebase.functions.FirebaseFunctions
 
 class MainActivity : ComponentActivity() {
 
@@ -37,9 +39,9 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun SymphonixApp() {
+    val context = LocalContext.current
     val navController = rememberNavController()
     val auth = FirebaseAuth.getInstance()
-    val currentUser = auth.currentUser
     
     // Lista de géneros favoritos compartida
     var favoriteGenres by remember { mutableStateOf(listOf<String>()) }
@@ -91,8 +93,7 @@ fun SymphonixApp() {
                 onSignIn = { username, email, password ->
                     auth.createUserWithEmailAndPassword(email, password).addOnCompleteListener { task ->
                         if (task.isSuccessful) {
-                            val profileUpdates =
-                                com.google.firebase.auth.UserProfileChangeRequest.Builder()
+                            val profileUpdates = UserProfileChangeRequest.Builder()
                                     .setDisplayName(username)
                                     .build()
 
@@ -150,7 +151,20 @@ fun SymphonixApp() {
             HomeScreen(
                 favoriteGenres = favoriteGenres,
                 recomendaciones = recomendaciones,
-                onRecomendacionesLoaded = { recomendaciones = it },
+                onRecomendacionesLoaded = { nuevasRecomendaciones: List<Map<String, Any>> -> recomendaciones = nuevasRecomendaciones },
+                onLike = { song ->
+                    val data = hashMapOf("trackId" to song["id"].toString())
+                    FirebaseFunctions.getInstance()
+                        .getHttpsCallable("addFavorite")
+                        .call(data)
+                        .addOnSuccessListener {
+                            Log.d("FAVORITES", "Canción agregada a favoritos desde Home")
+                            Toast.makeText(context, "Agregada a favoritos", Toast.LENGTH_SHORT).show()
+                        }
+                        .addOnFailureListener { e ->
+                            Log.e("FAVORITES", "Error al agregar a favoritos", e)
+                        }
+                },
                 onProfileClick = { navController.navigate("profile") },
                 onSearchClick = { navController.navigate("search") },
                 onMoodFormClick = { navController.navigate("mood_form") },
@@ -161,6 +175,19 @@ fun SymphonixApp() {
         composable("song_discover") {
             SongScreen(
                 recomendaciones = recomendaciones,
+                onLike = { song: SwipeableSong ->
+                    val data = hashMapOf("trackId" to song.id)
+                    FirebaseFunctions.getInstance()
+                        .getHttpsCallable("addFavorite")
+                        .call(data)
+                        .addOnSuccessListener {
+                            Log.d("FAVORITES", "Canción agregada a favoritos: ${song.title}")
+                            Toast.makeText(context, "Agregada a favoritos", Toast.LENGTH_SHORT).show()
+                        }
+                        .addOnFailureListener { e ->
+                            Log.e("FAVORITES", "Error al agregar a favoritos", e)
+                        }
+                },
                 onTabSelected = { index ->
                     when (index) {
                         0 -> navController.navigate("home")

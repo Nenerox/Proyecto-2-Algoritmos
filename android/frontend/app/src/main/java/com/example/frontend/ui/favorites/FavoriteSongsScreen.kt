@@ -1,5 +1,6 @@
 package com.example.frontend.ui.favorites
 
+import android.util.Log
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -14,20 +15,20 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
-import coil.compose.AsyncImage
-import coil.request.ImageRequest
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import coil.compose.AsyncImage
+import coil.request.ImageRequest
 import com.example.frontend.ui.home.SymphonixBottomBar
+import com.google.firebase.functions.FirebaseFunctions
 
 data class FavoriteSong(
     val id: String,
@@ -50,29 +51,62 @@ fun FavoriteSongsScreen(
     onTabSelected: (Int) -> Unit = {}
 ) {
     val bgColor = Color(0xFF121212)
-    val accentColor = Color(0xFF9C27B0)
     
     var selectedSongForDetails by remember { mutableStateOf<FavoriteSong?>(null) }
     val sheetState = rememberModalBottomSheetState()
     var showSheet by remember { mutableStateOf(false) }
+    var isLoading by remember { mutableStateOf(true) }
 
-    val favoriteSongs = remember {
-        listOf(
-            FavoriteSong("1", "Summertime Sadness", "Lana Del Rey", "4:25", Color(0xFFB582C7), null, 0.6f, 0.4f, 0.1f, 0.3f, 0.4f),
-            FavoriteSong("2", "Blinding Lights", "The Weeknd", "3:20", Color(0xFFFFC107), null, 0.8f, 0.7f, 0.0f, 0.1f, 0.8f),
-            FavoriteSong("3", "Starboy", "The Weeknd", "3:50", Color(0xFFE91E63), null, 0.7f, 0.8f, 0.0f, 0.1f, 0.9f),
-            FavoriteSong("4", "Perfect", "Ed Sheeran", "4:23", Color(0xFF1DB954), null, 0.4f, 0.3f, 0.0f, 0.7f, 0.3f),
-            FavoriteSong("5", "Flowers", "Miley Cyrus", "3:21", Color(0xFFFF4081), null, 0.7f, 0.7f, 0.0f, 0.2f, 0.6f),
-            FavoriteSong("6", "As It Was", "Harry Styles", "2:47", Color(0xFF03A9F4), null, 0.7f, 0.8f, 0.0f, 0.2f, 0.8f),
-            FavoriteSong("7", "Bohemian Rhapsody", "Queen", "5:55", Color(0xFF9C27B0), null, 0.5f, 0.3f, 0.1f, 0.4f, 0.4f),
-            FavoriteSong("8", "Rolling in the Deep", "Adele", "3:48", Color(0xFF795548), null, 0.7f, 0.5f, 0.0f, 0.2f, 0.5f),
-            FavoriteSong("9", "Yellow", "Coldplay", "4:29", Color(0xFFFFEB3B), null, 0.5f, 0.3f, 0.0f, 0.4f, 0.4f),
-            FavoriteSong("10", "Circles", "Post Malone", "3:35", Color(0xFF607D8B), null, 0.6f, 0.7f, 0.0f, 0.3f, 0.5f)
-        )
+    var favoriteSongs by remember { mutableStateOf(listOf<FavoriteSong>()) }
+
+    LaunchedEffect(Unit) {
+        FirebaseFunctions.getInstance()
+            .getHttpsCallable("getFavorites")
+            .call()
+            .addOnSuccessListener { result ->
+                val data = result.data as? List<*>
+                if (data != null) {
+                    favoriteSongs = data.filterIsInstance<Map<String, Any>>().map { item ->
+                        FavoriteSong(
+                            id = item["id"]?.toString() ?: "",
+                            title = item["name"]?.toString() ?: "Sin título",
+                            artist = item["artist"]?.toString() ?: "Artista desconocido",
+                            duration = "3:30", 
+                            color = Color(0xFF9C27B0), 
+                            imageUrl = null,
+                            energy = (item["energy"] as? Number)?.toFloat() ?: 0.5f,
+                            danceability = (item["danceability"] as? Number)?.toFloat() ?: 0.5f,
+                            instrumentalness = (item["instrumentalness"] as? Number)?.toFloat() ?: 0.5f,
+                            acousticness = (item["acousticness"] as? Number)?.toFloat() ?: 0.5f,
+                            tempo = (item["tempo"] as? Number)?.toFloat() ?: 0.5f
+                        )
+                    }
+                }
+                isLoading = false
+            }
+            .addOnFailureListener { e ->
+                Log.e("FAVORITES", "Error al cargar favoritos", e)
+                isLoading = false
+            }
     }
 
     Scaffold(
         containerColor = bgColor,
+        topBar = {
+            TopAppBar(
+                title = {},
+                navigationIcon = {
+                    IconButton(onClick = onBack) {
+                        Icon(
+                            Icons.AutoMirrored.Filled.ArrowBack, 
+                            contentDescription = "Regresar", 
+                            tint = Color.White
+                        )
+                    }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Transparent)
+            )
+        },
         bottomBar = {
             Box(
                 modifier = Modifier
@@ -102,6 +136,7 @@ fun FavoriteSongsScreen(
             ) {
                 Box(
                     modifier = Modifier
+                        .fillMaxSize()
                         .background(
                             Brush.verticalGradient(
                                 listOf(Color(0xFF913AA1).copy(alpha = 0.8f), bgColor)
@@ -131,21 +166,31 @@ fun FavoriteSongsScreen(
             }
 
             // Lista de canciones
-            LazyColumn(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(horizontal = 16.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp),
-                contentPadding = PaddingValues(bottom = 24.dp)
-            ) {
-                items(favoriteSongs) { song ->
-                    FavoriteSongItem(
-                        song = song,
-                        onMoreClick = {
-                            selectedSongForDetails = song
-                            showSheet = true
-                        }
-                    )
+            if (isLoading) {
+                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    CircularProgressIndicator(color = Color(0xFF9C27B0))
+                }
+            } else if (favoriteSongs.isEmpty()) {
+                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    Text("Aún no tienes canciones favoritas", color = Color.Gray)
+                }
+            } else {
+                LazyColumn(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(horizontal = 16.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                    contentPadding = PaddingValues(bottom = 24.dp)
+                ) {
+                    items(favoriteSongs) { song ->
+                        FavoriteSongItem(
+                            song = song,
+                            onMoreClick = {
+                                selectedSongForDetails = song
+                                showSheet = true
+                            }
+                        )
+                    }
                 }
             }
         }
@@ -153,12 +198,15 @@ fun FavoriteSongsScreen(
 
     if (showSheet && selectedSongForDetails != null) {
         ModalBottomSheet(
-            onDismissRequest = { showSheet = false },
+            onDismissRequest = { 
+                showSheet = false
+                selectedSongForDetails = null
+            },
             sheetState = sheetState,
             containerColor = Color(0xFF1E1E1E),
             dragHandle = { BottomSheetDefaults.DragHandle(color = Color.Gray) }
         ) {
-            SongDetailsSheet(selectedSongForDetails!!)
+            selectedSongForDetails?.let { SongDetailsSheet(it) }
         }
     }
 }
@@ -168,7 +216,6 @@ fun FavoriteSongItem(
     song: FavoriteSong,
     onMoreClick: () -> Unit = {}
 ) {
-    // LLAVE: Reseteamos la imagen cuando cambia el ID de la canción
     var resolvedImageUrl by remember(song.id, song.imageUrl) { mutableStateOf(song.imageUrl) }
 
     LaunchedEffect(song.id, song.title, song.artist, song.imageUrl) {
@@ -184,7 +231,7 @@ fun FavoriteSongItem(
                         resolvedImageUrl = url
                     }
                 } catch (e: Exception) {
-                    // Silently fail, fallback to generative art
+                    Log.e("IMAGE_RESOLVER", "Error resolving image", e)
                 }
             }
         }
@@ -203,7 +250,6 @@ fun FavoriteSongItem(
                 .fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Portada de Álbum estilizada
             Box(
                 modifier = Modifier
                     .size(56.dp)
@@ -222,7 +268,6 @@ fun FavoriteSongItem(
                         modifier = Modifier.fillMaxSize()
                     )
                 } else {
-                    // Arte Generativo basado en el ID para favoritos
                     val hash = song.id.hashCode()
                     val color1 = Color(0xFF000000 or (hash and 0xFFFFFF).toLong())
                     val color2 = Color(0xFF000000 or ((hash shr 8) and 0xFFFFFF).toLong())
