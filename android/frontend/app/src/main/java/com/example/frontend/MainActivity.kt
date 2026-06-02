@@ -20,6 +20,7 @@ import com.example.frontend.ui.home.SearchScreen
 import com.example.frontend.ui.profile.ProfileScreen
 import com.example.frontend.ui.profile.AboutUsScreen
 import com.example.frontend.ui.favorites.FavoriteSongsScreen
+import com.example.frontend.ui.dislikes.DislikeSongsScreen
 import com.example.frontend.ui.song.SongScreen
 import com.example.frontend.ui.song.SwipeableSong
 import com.example.frontend.ui.form.MoodFormScreen
@@ -257,6 +258,19 @@ fun SymphonixApp() {
                 }
             )
         }
+        composable("dislikes") {
+            DislikeSongsScreen(
+                onBack = { navController.popBackStack() },
+                onTabSelected = { index ->
+                    when (index) {
+                        0 -> navController.navigate("home")
+                        1 -> navController.navigate("mood_form")
+                        2 -> navController.navigate("favorites")
+                        3 -> navController.navigate("profile")
+                    }
+                }
+            )
+        }
         composable("search") {
             SearchScreen(
                 onBack = { navController.popBackStack() }
@@ -284,6 +298,7 @@ fun SymphonixApp() {
                 onHomeClick = { navController.navigate("home") },
                 onMoodFormClick = { navController.navigate("mood_form") },
                 onFavoritesClick = { navController.navigate("favorites") },
+                onDislikesClick = { navController.navigate("dislikes") },
                 onAboutUsClick = { navController.navigate("about_us") },
                 onEditGenresClick = { navController.navigate("genre") },
                 onLogout = {

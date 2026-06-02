@@ -331,7 +331,10 @@ fun RecommendedCard(
         shape = RoundedCornerShape(20.dp),
         border = BorderStroke(0.5.dp, Color.White.copy(alpha = 0.1f))
     ) {
-        Row(modifier = Modifier.fillMaxSize()) {
+        Row(
+            modifier = Modifier.fillMaxSize(),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
             Box(
                 modifier = Modifier
                     .fillMaxHeight()
@@ -392,10 +395,16 @@ fun RecommendedCard(
             }
 
             Row(
-                modifier = Modifier.padding(end = 16.dp),
-                verticalAlignment = Alignment.CenterVertically
+                modifier = Modifier
+                    .fillMaxHeight()
+                    .padding(end = 16.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                IconButton(onClick = onLikeClick) {
+                IconButton(
+                    onClick = onLikeClick,
+                    modifier = Modifier.size(48.dp)
+                ) {
                     Icon(Icons.Default.FavoriteBorder, null, tint = Color.White)
                 }
 

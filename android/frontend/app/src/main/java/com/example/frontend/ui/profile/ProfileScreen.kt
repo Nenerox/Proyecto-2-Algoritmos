@@ -34,6 +34,7 @@ fun ProfileScreen(
     onMoodFormClick: () -> Unit = {},
     onFavoritesClick: () -> Unit = {},
     onAboutUsClick: () -> Unit = {},
+    onDislikesClick: () -> Unit = {},
     onLogout: () -> Unit = {},
     onEditGenresClick: () -> Unit = {}
 ) {
@@ -149,21 +150,33 @@ fun ProfileScreen(
 
                 Spacer(Modifier.height(32.dp)) // Multiplo de 8
 
-                ProfileSectionModern(title = "Géneros Favoritos") {
-                    GenresGridModern(favoriteGenres)
+                Text(
+                    "Géneros Favoritos",
+                    color = Color.White,
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.padding(bottom = 12.dp)
+                )
+                GenresGridModern(favoriteGenres)
+
+                Spacer(Modifier.height(32.dp)) // Multiplo de 8
+
+                ProfileSectionModern(title = "Mi Actividad") {
+                    ProfileItemModern(
+                        title = "Canciones con Dislike",
+                        onClick = onDislikesClick
+                    )
                 }
 
                 Spacer(Modifier.height(32.dp)) // Multiplo de 8
 
                 ProfileSectionModern(title = "Soporte") {
                     ProfileItemModern(
-                        Icons.Outlined.Info, 
-                        "Sobre nosotros",
+                        title = "Sobre nosotros",
                         onClick = onAboutUsClick
                     )
                     ProfileItemModern(
-                        Icons.AutoMirrored.Outlined.Logout, 
-                        "Cerrar Sesión", 
+                        title = "Cerrar Sesión", 
                         tint = Color(0xFFFF5252),
                         onClick = onLogout
                     )
@@ -181,17 +194,25 @@ fun ProfileSectionModern(title: String, content: @Composable () -> Unit) {
         Text(
             title,
             color = Color.White,
-            fontSize = 20.sp, // Alineado con HomeScreen
+            fontSize = 20.sp,
             fontWeight = FontWeight.Bold,
-            modifier = Modifier.padding(bottom = 16.dp)
+            modifier = Modifier.padding(bottom = 12.dp)
         )
-        content()
+        Surface(
+            color = Color(0xFF1E1E1E), // Gris oscuro para el "frame"
+            shape = RoundedCornerShape(24.dp), // Esquinas redondeadas según imagen
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Column(modifier = Modifier.padding(vertical = 4.dp)) {
+                content()
+            }
+        }
     }
 }
 
 @Composable
 fun ProfileItemModern(
-    icon: ImageVector,
+    icon: ImageVector? = null,
     title: String,
     value: String? = null,
     tint: Color = Color.White,
@@ -201,16 +222,32 @@ fun ProfileItemModern(
         modifier = Modifier
             .fillMaxWidth()
             .clickable { onClick() }
-            .padding(vertical = 14.dp),
+            .padding(horizontal = 20.dp, vertical = 16.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Icon(icon, null, tint = tint.copy(alpha = 0.7f), modifier = Modifier.size(24.dp))
-        Spacer(Modifier.width(16.dp))
-        Text(title, color = tint, fontSize = 16.sp, modifier = Modifier.weight(1f))
+        if (icon != null) {
+            Icon(icon, null, tint = tint.copy(alpha = 0.7f), modifier = Modifier.size(24.dp))
+            Spacer(Modifier.width(16.dp))
+        }
+        
+        Text(
+            text = title, 
+            color = tint, 
+            fontSize = 16.sp, 
+            fontWeight = FontWeight.Medium,
+            modifier = Modifier.weight(1f)
+        )
+        
         if (value != null) {
             Text(value, color = Color.Gray, fontSize = 14.sp, modifier = Modifier.padding(end = 8.dp))
         }
-        Icon(Icons.Default.ChevronRight, null, tint = Color.Gray.copy(alpha = 0.5f), modifier = Modifier.size(20.dp))
+        
+        Icon(
+            Icons.Default.ChevronRight, 
+            null, 
+            tint = Color.Gray.copy(alpha = 0.5f), 
+            modifier = Modifier.size(20.dp)
+        )
     }
 }
 
