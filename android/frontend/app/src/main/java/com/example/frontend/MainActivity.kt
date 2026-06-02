@@ -26,6 +26,7 @@ import com.example.frontend.ui.form.MoodFormScreen
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.UserProfileChangeRequest
 import com.google.firebase.functions.FirebaseFunctions
+import com.google.firebase.functions.getHttpsCallable
 
 class MainActivity : ComponentActivity() {
 
@@ -177,15 +178,24 @@ fun SymphonixApp() {
                 recomendaciones = recomendaciones,
                 onLike = { song: SwipeableSong ->
                     val data = hashMapOf("trackId" to song.id)
-                    FirebaseFunctions.getInstance()
-                        .getHttpsCallable("addFavorite")
-                        .call(data)
+                    FirebaseFunctions.getInstance().getHttpsCallable("addFavorite").call(data)
                         .addOnSuccessListener {
                             Log.d("FAVORITES", "Canción agregada a favoritos: ${song.title}")
                             Toast.makeText(context, "Agregada a favoritos", Toast.LENGTH_SHORT).show()
                         }
                         .addOnFailureListener { e ->
                             Log.e("FAVORITES", "Error al agregar a favoritos", e)
+                        }
+                },
+                onDislike = { song: SwipeableSong ->
+                    val data = hashMapOf("trackId" to song.id)
+                    FirebaseFunctions.getInstance().getHttpsCallable("addDislike").call(data)
+                        .addOnSuccessListener {
+                            Log.d("DISLIKE", "Cancion agregada a dislikes: ${song.title}")
+                            Toast.makeText(context, "Agregada a dislikes", Toast.LENGTH_SHORT).show()
+                        }
+                        .addOnFailureListener { e ->
+                            Log.e("DISLIKE", "Error al marcar como dislike", e)
                         }
                 },
                 onTabSelected = { index ->
