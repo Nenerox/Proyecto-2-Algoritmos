@@ -14,3 +14,8 @@ const favorites = require("./favorites");
 exports.addFavorite = favorites.addFavorite;
 exports.getFavorites = favorites.getFavorites;
 exports.removeFavorite = favorites.removeFavorite;
+
+const dislike = require("./dislike");
+exports.addDislike = dislike.addDislike;
+exports.getDislikes = dislike.getDislikes;
+exports.removeDislike = dislike.removeDislike;
