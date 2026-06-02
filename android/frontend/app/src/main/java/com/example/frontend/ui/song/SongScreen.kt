@@ -32,7 +32,6 @@ import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.example.frontend.ui.home.SymphonixBottomBar
-import com.example.frontend.ui.favorites.AttributeBar
 import kotlinx.coroutines.launch
 
 data class SwipeableSong(
@@ -270,9 +269,50 @@ fun SongAnalysisContent(song: SwipeableSong) {
         AttributeBar("Instrumental", song.instrumentalness, Color(0xFF5D7A8C))
         AttributeBar("Acústico", song.acousticness, Color(0xFFAD7373))
         AttributeBar("Tempo", song.tempo, Color(0xFF738C8C))
-        
+
         Spacer(Modifier.height(32.dp))
         Text("Toca para volver", color = Color.Gray, fontSize = 12.sp, modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.Center)
+    }
+}
+
+@Composable
+fun AttributeBar(
+    label: String,
+    value: Float,
+    color: Color
+) {
+    Column(
+        modifier = Modifier.padding(vertical = 8.dp)
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Text(
+                label,
+                color = Color.LightGray,
+                fontSize = 14.sp
+            )
+
+            Text(
+                "${(value * 100).toInt()}%",
+                color = Color.White,
+                fontSize = 14.sp,
+                fontWeight = FontWeight.Bold
+            )
+        }
+
+        Spacer(Modifier.height(8.dp))
+
+        LinearProgressIndicator(
+            progress = { value },
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(8.dp)
+                .clip(CircleShape),
+            color = color,
+            trackColor = Color(0xFF2A2A2A)
+        )
     }
 }
 
