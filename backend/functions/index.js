@@ -13,3 +13,4 @@ exports.saveDailyMood = saveDailyMood.saveDailyMood;
 const favorites = require("./favorites");
 exports.addFavorite = favorites.addFavorite;
 exports.getFavorites = favorites.getFavorites;
+exports.removeFavorite = favorites.removeFavorite;

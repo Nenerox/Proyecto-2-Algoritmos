@@ -3,6 +3,7 @@ const driver = require("./neo4j");
 
 // Esta función crea la conexión :LIKES entre el usuario y la canción
 exports.addFavorite = functions.https.onCall(async (request) => {
+
     if (!request.auth) {
         throw new functions.https.HttpsError(
             "unauthenticated",
@@ -28,7 +29,8 @@ exports.addFavorite = functions.https.onCall(async (request) => {
             MERGE (u:User {uid: $uid})
             WITH u
             MATCH (t:Track {id: $trackId})
-            MERGE (u)-[:LIKES]->(t)
+            MERGE (u)-[r:LIKES]->(t)
+            ON CREATE SET r.createdAt = datetime()
             `,
             { uid, trackId }
         );
@@ -56,7 +58,7 @@ exports.getFavorites = functions.https.onCall(async (request) => {
     try {
         const result = await session.run(
             `
-            MATCH (u:User {uid: $uid})-[:LIKES]->(t:Track)
+            MATCH (u:User {uid:$uid})-[r:LIKES]->(t:Track)
             MATCH (t)-[:PERFORMED_BY]->(a:Artist)
             RETURN
                 t.id AS id,
@@ -64,6 +66,8 @@ exports.getFavorites = functions.https.onCall(async (request) => {
                 a.name AS artist,
                 t.album AS album,
                 t.popularity AS popularity
+
+            ORDER BY r.createdAt DESC
             `,
             { uid }
         );
@@ -78,6 +82,30 @@ exports.getFavorites = functions.https.onCall(async (request) => {
     } catch (error) {
         console.error("Error al obtener favoritos:", error);
         throw new functions.https.HttpsError("internal", error.message);
+    } finally {
+        await session.close();
+    }
+});
+
+exports.removeFavorite = functions.https.onCall(async (request) => {
+
+    const uid = request.auth.uid;
+    const trackId = request.data.trackId;
+
+    const session = driver.session();
+
+    try {
+
+        await session.run(
+            `
+            MATCH (u:User {uid:$uid})-[r:LIKES]->(t:Track {id:$trackId})
+            DELETE r
+            `,
+            { uid, trackId }
+        );
+
+        return { success: true };
+
     } finally {
         await session.close();
     }
