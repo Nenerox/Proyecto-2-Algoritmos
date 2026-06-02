@@ -33,6 +33,12 @@ exports.getRecommendations = functions.https.onCall(async (request) => {
             AND t.instrumentalness IS NOT NULL
             AND t.acousticness IS NOT NULL
             AND t.tempo IS NOT NULL
+            AND NOT EXISTS {
+                MATCH (u)-[:DISLIKES]->(t)
+            }
+            AND NOT EXISTS {
+                MATCH (u)-[:LIKES]->(t)
+            }
         `;
 
         if (genre) {
