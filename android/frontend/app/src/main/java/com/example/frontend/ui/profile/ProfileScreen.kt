@@ -140,20 +140,20 @@ fun ProfileScreen(
                 // Botón Editar generos (Estilizado)
                 Button(
                     onClick = onEditGenresClick,
-                    modifier = Modifier.fillMaxWidth().height(50.dp),
+                    modifier = Modifier.fillMaxWidth().height(56.dp), // Multiplo de 8
                     colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF252525)),
-                    shape = RoundedCornerShape(14.dp)
+                    shape = RoundedCornerShape(16.dp) // Multiplo de 8
                 ) {
-                    Text("Editar Generos Favoritos", color = Color.White, fontWeight = FontWeight.Bold)
+                    Text("Editar perfil", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 16.sp)
                 }
 
-                Spacer(Modifier.height(24.dp))
+                Spacer(Modifier.height(32.dp)) // Multiplo de 8
 
                 ProfileSectionModern(title = "Géneros Favoritos") {
                     GenresGridModern(favoriteGenres)
                 }
 
-                Spacer(Modifier.height(24.dp))
+                Spacer(Modifier.height(32.dp)) // Multiplo de 8
 
                 ProfileSectionModern(title = "Soporte") {
                     ProfileItemModern(
@@ -181,7 +181,7 @@ fun ProfileSectionModern(title: String, content: @Composable () -> Unit) {
         Text(
             title,
             color = Color.White,
-            fontSize = 18.sp,
+            fontSize = 20.sp, // Alineado con HomeScreen
             fontWeight = FontWeight.Bold,
             modifier = Modifier.padding(bottom = 16.dp)
         )
@@ -224,13 +224,13 @@ fun GenresGridModern(genres: List<String>) {
         genres.forEach { genre ->
             Surface(
                 color = Color(0xFF252525),
-                shape = RoundedCornerShape(10.dp),
+                shape = RoundedCornerShape(12.dp), // Multiplo de 4/8 pero más sutil
                 border = BorderStroke(1.dp, Color.White.copy(alpha = 0.05f))
             ) {
                 Text(
                     text = genre,
                     color = Color.LightGray,
-                    fontSize = 13.sp,
+                    fontSize = 14.sp,
                     modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
                 )
             }

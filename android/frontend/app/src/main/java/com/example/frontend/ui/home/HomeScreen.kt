@@ -68,9 +68,9 @@ fun HomeScreen(
             ) {
                 SymphonixBottomBar(
                     selectedIndex = selectedTab,
-                    onTabSelected = { index ->
-                        selectedTab = index
-                        when (index) {
+                    onTabSelected = {
+                        selectedTab = it
+                        when (it) {
                             0 -> { /* Home */ }
                             1 -> onMoodFormClick()
                             2 -> onFavoritesClick()
@@ -87,12 +87,13 @@ fun HomeScreen(
                 .fillMaxSize()
                 .padding(paddingValues)
                 .verticalScroll(rememberScrollState())
+                .padding(vertical = 32.dp) // Alineado con MoodFormScreen
         ) {
             // Header
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(24.dp),
+                    .padding(horizontal = 24.dp), // Margen estándar de 24dp
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
@@ -111,21 +112,21 @@ fun HomeScreen(
                 }
                 
                 Row {
-                    IconButton(onClick = onSearchClick) {
-                        Icon(Icons.Default.Search, null, tint = Color.White)
-                    }
                     IconButton(onClick = onProfileClick) {
                         Icon(Icons.Default.AccountCircle, null, tint = Color.White, modifier = Modifier.size(32.dp))
                     }
                 }
             }
 
+            Spacer(Modifier.height(24.dp))
+
             // Categories
             LazyRow(
-                modifier = Modifier.padding(horizontal = 16.dp),
+                modifier = Modifier.fillMaxWidth(),
+                contentPadding = PaddingValues(horizontal = 24.dp),
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                val categories = listOf("Todo", "Música", "Podcasts", "Estado de Ánimo")
+                val categories = listOf("Todo") + favoriteGenres
                 items(categories) { category ->
                     FilterChip(
                         selected = selectedCategory == category,
@@ -134,28 +135,25 @@ fun HomeScreen(
                         colors = FilterChipDefaults.filterChipColors(
                             containerColor = Color(0xFF1E1E1E),
                             labelColor = Color.Gray,
-                            selectedContainerColor = Color(0xFFB582C7),
+                            selectedContainerColor = Color(0xFFFFFFFF),
                             selectedLabelColor = Color.Black
                         ),
-                        border = null
+                        border = null,
+                        shape = RoundedCornerShape(16.dp)
                     )
                 }
             }
 
-            Spacer(Modifier.height(24.dp))
-
-            // Featured / Banner
-            DiscoverWeeklyBanner()
-
-            Spacer(Modifier.height(32.dp))
-
-            SectionHeader("Canciones para ti")
-
             LaunchedEffect(selectedCategory) {
-                val data = hashMapOf(
-                    "limit" to 20,
-                    "genre" to if (selectedCategory == "Todo") null else selectedCategory.lowercase()
-                )
+                val data = if (selectedCategory == "Todo") {
+                    hashMapOf("limit" to 20)
+                } else {
+                    hashMapOf(
+                        "genre" to selectedCategory.lowercase(),
+                        "limit" to 20
+                    )
+                }
+                
                 FirebaseFunctions.getInstance().getHttpsCallable("getRecommendations").call(data)
                     .addOnSuccessListener { result ->
                         val dataList = result.data as? List<Map<String, Any>>
@@ -164,8 +162,21 @@ fun HomeScreen(
                         }
                     }
                     .addOnFailureListener { e ->
-                        Log.e("HOME", "Error loading recommendations", e)
+                        Log.e("RECOMMENDATIONS_ERROR", e.message ?: "Error de recomendaciones", e)
                     }
+            }
+
+            Spacer(Modifier.height(16.dp))
+
+            when (selectedCategory) {
+                "Todo" -> {
+                    Banner()
+                    Spacer(modifier = Modifier.height(32.dp))
+                    SectionHeader("Canciones para ti")
+                }
+                else -> {
+                    SectionHeader("Canciones de $selectedCategory")
+                }
             }
 
             // Recomendaciones
@@ -175,16 +186,16 @@ fun HomeScreen(
                         CircularProgressIndicator(color = Color(0xFFB582C7))
                     }
                 } else {
-                    recomendaciones.take(5).forEach { song ->
+                    recomendaciones.forEach { song ->
                         RecommendedCard(
-                            id = song["id"].toString(),
+                            spotifyId = song["id"].toString(),
                             title = song["name"].toString(),
                             artist = song["artist"].toString(),
                             album = song["album"].toString(),
-                            imageUrl = null, // Se resuelve dinámicamente en el componente
-                            color = Color(0xFFB582C7),
+                            imageUrl = song["image_url"]?.toString(),
+                            tint = Color(0xFFB582C7),
                             context = context,
-                            onPlayClick = onSongClick,
+                            onClick = onSongClick,
                             onLikeClick = { onLike(song) }
                         )
                         Spacer(Modifier.height(16.dp))
@@ -192,23 +203,7 @@ fun HomeScreen(
                 }
             }
 
-            Spacer(Modifier.height(32.dp))
-
-            SectionHeader("Basado en tus géneros")
-            LazyRow(
-                modifier = Modifier.padding(horizontal = 16.dp),
-                horizontalArrangement = Arrangement.spacedBy(16.dp)
-            ) {
-                items(favoriteGenres) { genre ->
-                    PlaylistRow(
-                        title = genre,
-                        artist = "Mix personalizado",
-                        info = "Actualizado hoy"
-                    )
-                }
-            }
-
-            Spacer(Modifier.height(32.dp))
+            Spacer(Modifier.height(24.dp))
         }
     }
 }
@@ -225,28 +220,38 @@ fun SectionHeader(title: String) {
 }
 
 @Composable
-fun DiscoverWeeklyBanner() {
+fun Banner() {
     Box(
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 24.dp)
             .height(160.dp)
-            .clip(RoundedCornerShape(24.dp))
+            .clip(RoundedCornerShape(28.dp))
             .background(
                 Brush.linearGradient(
                     listOf(Color(0xFF913AA1), Color(0xFFB582C7))
                 )
             )
-            .clickable { /* Acción banner */ }
     ) {
         Column(
             modifier = Modifier
-                .align(Alignment.CenterStart)
-                .padding(24.dp)
+                .padding(28.dp)
+                .fillMaxSize()
         ) {
-            Text("Symphonix Mix", color = Color.White, fontSize = 14.sp, fontWeight = FontWeight.Bold)
-            Spacer(Modifier.height(4.dp))
-            Text("Tu dosis diaria\nde música nueva", color = Color.White, fontSize = 24.sp, fontWeight = FontWeight.ExtraBold)
+            Text(
+                text = "Symphonix Mix",
+                color = Color.White,
+                fontWeight = FontWeight.ExtraBold,
+                fontSize = 24.sp,
+                lineHeight = 28.sp
+            )
+
+            Text(
+                text = "Tu dosis diaria\nde música nueva",
+                color = Color.White.copy(alpha = 0.8f),
+                fontSize = 12.sp,
+                modifier = Modifier.padding(top = 8.dp, bottom = 8.dp)
+            )
         }
         Icon(
             Icons.Default.MusicNote,
@@ -261,9 +266,13 @@ fun DiscoverWeeklyBanner() {
 }
 
 @Composable
-fun PlaylistRow(title: String, artist: String, info: String) {
+fun PlaylistRow(title: String, artist: String, info: String, onClick: () -> Unit = {}) {
     val displayInfo = info // Uso ficticio para evitar error
-    Column(modifier = Modifier.width(160.dp)) {
+    Column(
+        modifier = Modifier
+            .width(160.dp)
+            .clickable { onClick() }
+    ) {
         Box(
             modifier = Modifier
                 .size(160.dp)
@@ -281,49 +290,53 @@ fun PlaylistRow(title: String, artist: String, info: String) {
 
 @Composable
 fun RecommendedCard(
-    id: String,
+    spotifyId: String,
     title: String,
     artist: String,
     album: String,
-    imageUrl: String?,
-    color: Color,
+    imageUrl: String? = null,
+    tint: Color,
     context: Context,
-    onPlayClick: () -> Unit,
+    onClick: () -> Unit,
     onLikeClick: () -> Unit = {}
 ) {
-    val currentAlbum = album // Uso ficticio
-    var resolvedImageUrl by remember(id) { mutableStateOf(imageUrl) }
+    // LLAVE: Usamos title, artist y imageUrl como claves para que el estado se resetee
+    var resolvedImageUrl by remember(title, artist, imageUrl) { mutableStateOf(imageUrl) }
 
-    LaunchedEffect(title, artist) {
-        if (resolvedImageUrl == null) {
+    LaunchedEffect(title, artist, imageUrl) {
+        if (imageUrl == null) {
             kotlin.concurrent.thread {
                 try {
                     val query = Uri.encode("$artist $title")
                     val searchUrl = "https://itunes.apple.com/search?term=$query&entity=song&limit=1"
                     val response = java.net.URL(searchUrl).readText()
                     val match = "\"artworkUrl100\":\"(.*?)\"".toRegex().find(response)
-                    val url = match?.groupValues?.get(1)?.replace("100x100bb", "400x400bb")
-                    if (url != null) { resolvedImageUrl = url }
-                } catch (e: Exception) { }
+                    val url = match?.groupValues?.get(1)?.replace("100x100bb", "600x600bb")
+                    if (url != null) {
+                        resolvedImageUrl = url
+                    }
+                } catch (e: Exception) {
+                    Log.e("ITUNES_ERROR", "Error fetching image: ${e.message}")
+                }
             }
         }
     }
 
     Surface(
-        onClick = onPlayClick,
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(110.dp)
+            .clickable { onClick() },
         color = Color(0xFF1E1E1E),
-        shape = RoundedCornerShape(16.dp),
-        modifier = Modifier.fillMaxWidth()
+        shape = RoundedCornerShape(20.dp),
+        border = BorderStroke(0.5.dp, Color.White.copy(alpha = 0.1f))
     ) {
-        Row(
-            modifier = Modifier.padding(12.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
+        Row(modifier = Modifier.fillMaxSize()) {
             Box(
                 modifier = Modifier
-                    .size(64.dp)
-                    .clip(RoundedCornerShape(8.dp))
-                    .background(color.copy(alpha = 0.1f)),
+                    .fillMaxHeight()
+                    .width(110.dp)
+                    .background(tint.copy(alpha = 0.2f)),
                 contentAlignment = Alignment.Center
             ) {
                 if (resolvedImageUrl != null) {
@@ -332,35 +345,79 @@ fun RecommendedCard(
                             .data(resolvedImageUrl)
                             .crossfade(true)
                             .build(),
-                        contentDescription = null,
+                        contentDescription = "Album Art",
                         contentScale = ContentScale.Crop,
                         modifier = Modifier.fillMaxSize()
                     )
                 } else {
-                    Icon(Icons.Default.MusicNote, null, tint = color)
+                    // Arte Generativo basado en el ID
+                    val hash = spotifyId.hashCode()
+                    val color1 = Color(0xFF000000 or (hash and 0xFFFFFF).toLong())
+                    val color2 = Color(0xFF000000 or ((hash shr 8) and 0xFFFFFF).toLong())
+                    
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(Brush.linearGradient(listOf(color1, color2))),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = title.take(1).uppercase(),
+                            color = Color.White.copy(alpha = 0.5f),
+                            fontSize = 40.sp,
+                            fontWeight = FontWeight.Black
+                        )
+                    }
                 }
             }
 
-            Spacer(Modifier.width(16.dp))
-
-            Column(modifier = Modifier.weight(1f)) {
-                Text(title, color = Color.White, fontWeight = FontWeight.Bold, fontSize = 16.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
-                Text(artist, color = Color.Gray, fontSize = 14.sp)
+            Column(
+                modifier = Modifier
+                    .padding(16.dp)
+                    .weight(1f),
+                verticalArrangement = Arrangement.Center
+            ) {
+                Text(
+                    title,
+                    color = Color.White,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 18.sp,
+                    maxLines = 1
+                )
+                Text(
+                    "$artist • $album",
+                    color = Color.Gray,
+                    fontSize = 14.sp
+                )
             }
 
-            IconButton(onClick = onLikeClick) {
-                Icon(Icons.Default.FavoriteBorder, null, tint = Color.White)
-            }
+            Row(
+                modifier = Modifier.padding(end = 16.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                IconButton(onClick = onLikeClick) {
+                    Icon(Icons.Default.FavoriteBorder, null, tint = Color.White)
+                }
 
-            IconButton(onClick = {
-                val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://open.spotify.com/track/$id"))
-                context.startActivity(intent)
-            }) {
-                Icon(Icons.Default.PlayCircle, null, tint = Color.White, modifier = Modifier.size(32.dp))
+                Box(
+                    modifier = Modifier
+                        .size(44.dp)
+                        .background(Color.White.copy(alpha = 0.05f), CircleShape)
+                        .clickable {
+                            val intent = Intent(Intent.ACTION_VIEW, Uri.parse(
+                                "https://open.spotify.com/track/$spotifyId"
+                            ))
+                            context.startActivity(intent)
+                        },
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(Icons.Default.PlayArrow, null, tint = Color.White)
+                }
             }
         }
     }
 }
+
 
 @Preview(showBackground = true)
 @Composable

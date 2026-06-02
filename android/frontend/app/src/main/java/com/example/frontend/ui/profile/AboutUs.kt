@@ -143,13 +143,13 @@ fun TeamMemberItem(role: String, description: String) {
     Surface(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(bottom = 12.dp),
+            .padding(bottom = 16.dp), // Multiplo de 8
         color = Color(0xFF1E1E1E),
-        shape = RoundedCornerShape(12.dp)
+        shape = RoundedCornerShape(16.dp) // Multiplo de 8
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
-            Text(role, color = Color(0xFF1DB954), fontWeight = FontWeight.Bold, fontSize = 14.sp)
-            Text(description, color = Color.LightGray, fontSize = 14.sp, modifier = Modifier.padding(top = 4.dp))
+            Text(role, color = Color(0xFF1DB954), fontWeight = FontWeight.Bold, fontSize = 16.sp)
+            Text(description, color = Color.LightGray, fontSize = 14.sp, modifier = Modifier.padding(top = 8.dp))
         }
     }
 }

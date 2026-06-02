@@ -134,16 +134,6 @@ fun FavoriteSongsScreen(
                     .fillMaxWidth()
                     .height(96.dp)
             ) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .background(
-                            Brush.verticalGradient(
-                                listOf(Color(0xFF913AA1).copy(alpha = 0.8f), bgColor)
-                            )
-                        )
-                )
-                
                 Column(
                     modifier = Modifier
                         .fillMaxSize()
@@ -178,9 +168,9 @@ fun FavoriteSongsScreen(
                 LazyColumn(
                     modifier = Modifier
                         .fillMaxSize()
-                        .padding(horizontal = 16.dp),
-                    verticalArrangement = Arrangement.spacedBy(8.dp),
-                    contentPadding = PaddingValues(bottom = 24.dp)
+                        .padding(horizontal = 24.dp), // Alineado a 24dp
+                    verticalArrangement = Arrangement.spacedBy(16.dp), // Multiplo de 8
+                    contentPadding = PaddingValues(bottom = 32.dp) // Multiplo de 8
                 ) {
                     items(favoriteSongs) { song ->
                         FavoriteSongItem(
@@ -188,6 +178,15 @@ fun FavoriteSongsScreen(
                             onMoreClick = {
                                 selectedSongForDetails = song
                                 showSheet = true
+                            },
+                            onRemoveClick = {
+                                favoriteSongs = favoriteSongs.filter { it.id != song.id }
+                                FirebaseFunctions.getInstance()
+                                    .getHttpsCallable("removeFavorite")
+                                    .call(hashMapOf("trackId" to song.id))
+                                    .addOnFailureListener {
+                                        Log.e("FAVORITES", "Error al eliminar")
+                                    }
                             }
                         )
                     }
@@ -214,7 +213,8 @@ fun FavoriteSongsScreen(
 @Composable
 fun FavoriteSongItem(
     song: FavoriteSong,
-    onMoreClick: () -> Unit = {}
+    onMoreClick: () -> Unit = {},
+    onRemoveClick: () -> Unit = {}
 ) {
     var resolvedImageUrl by remember(song.id, song.imageUrl) { mutableStateOf(song.imageUrl) }
 
@@ -242,18 +242,18 @@ fun FavoriteSongItem(
             .fillMaxWidth()
             .clickable { /* Play song */ },
         color = Color.Transparent,
-        shape = RoundedCornerShape(12.dp)
+        shape = RoundedCornerShape(16.dp) // Multiplo de 8
     ) {
         Row(
             modifier = Modifier
-                .padding(8.dp)
+                .padding(vertical = 8.dp) // Multiplo de 8
                 .fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Box(
                 modifier = Modifier
-                    .size(56.dp)
-                    .clip(RoundedCornerShape(8.dp))
+                    .size(64.dp) // Multiplo de 8
+                    .clip(RoundedCornerShape(12.dp))
                     .background(song.color.copy(alpha = 0.2f)),
                 contentAlignment = Alignment.Center
             ) {
@@ -315,12 +315,14 @@ fun FavoriteSongItem(
                     fontSize = 12.sp,
                     modifier = Modifier.padding(horizontal = 12.dp)
                 )
-                Icon(
-                    Icons.Default.Favorite, 
-                    contentDescription = "Favorito", 
-                    tint = Color(0xFF9C27B0),
-                    modifier = Modifier.size(20.dp)
-                )
+                IconButton(onClick = onRemoveClick) {
+                    Icon(
+                        Icons.Default.Favorite, 
+                        contentDescription = "Quitar de favoritos", 
+                        tint = Color(0xFF1DB954),
+                        modifier = Modifier.size(20.dp)
+                    )
+                }
                 Spacer(Modifier.width(8.dp))
                 IconButton(onClick = onMoreClick) {
                     Icon(Icons.Default.MoreVert, null, tint = Color.Gray)

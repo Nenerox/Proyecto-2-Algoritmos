@@ -24,11 +24,11 @@ fun SymphonixBottomBar(
             selected = selectedIndex == 0,
             onClick = { onTabSelected(0) },
             colors = NavigationBarItemDefaults.colors(
-                selectedIconColor = Color.White,
+                selectedIconColor = Color.Black,
                 selectedTextColor = Color.White,
                 unselectedIconColor = Color.Gray,
                 unselectedTextColor = Color.Gray,
-                indicatorColor = Color(0xFFB582C7)
+                indicatorColor = Color.White
             )
         )
         NavigationBarItem(
@@ -37,11 +37,11 @@ fun SymphonixBottomBar(
             selected = selectedIndex == 1,
             onClick = { onTabSelected(1) },
             colors = NavigationBarItemDefaults.colors(
-                selectedIconColor = Color.White,
+                selectedIconColor = Color.Black,
                 selectedTextColor = Color.White,
                 unselectedIconColor = Color.Gray,
                 unselectedTextColor = Color.Gray,
-                indicatorColor = Color(0xFFB582C7)
+                indicatorColor = Color.White
             )
         )
         NavigationBarItem(
@@ -50,11 +50,11 @@ fun SymphonixBottomBar(
             selected = selectedIndex == 2,
             onClick = { onTabSelected(2) },
             colors = NavigationBarItemDefaults.colors(
-                selectedIconColor = Color.White,
+                selectedIconColor = Color.Black,
                 selectedTextColor = Color.White,
                 unselectedIconColor = Color.Gray,
                 unselectedTextColor = Color.Gray,
-                indicatorColor = Color(0xFFB582C7)
+                indicatorColor = Color.White
             )
         )
         NavigationBarItem(
@@ -63,11 +63,11 @@ fun SymphonixBottomBar(
             selected = selectedIndex == 3,
             onClick = { onTabSelected(3) },
             colors = NavigationBarItemDefaults.colors(
-                selectedIconColor = Color.White,
+                selectedIconColor = Color.Black,
                 selectedTextColor = Color.White,
                 unselectedIconColor = Color.Gray,
                 unselectedTextColor = Color.Gray,
-                indicatorColor = Color(0xFFB582C7)
+                indicatorColor = Color.White
             )
         )
     }
