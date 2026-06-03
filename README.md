@@ -66,7 +66,7 @@ El repositorio se organiza en los siguientes componentes principales:
 
 ### 3. Importación de Datos (Java)
 
-## 🚀 Pasos para la Ejecución
+## Pasos para la Ejecución
 
 ### 1. Desplegar el Backend
 ## Contribuyentes
