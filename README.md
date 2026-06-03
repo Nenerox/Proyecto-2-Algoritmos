@@ -1,175 +1,74 @@
-# SYMPHONIX — NEO4J SPOTIFY GRAPH
+# SYMPHONIX — NEO4J SPOTIFY GRAPH & MOBILE APP
 
-**Symphonix** es una aplicación en Java que se conecta a **Neo4j**, **importa datos desde archivos CSV** (dataset de Spotify / dataset de pruebas) y **genera relaciones de similitud** entre canciones para construir un grafo consultable desde **Neo4j Browser**.
-
----
-
-## Descripción
-
-Este proyecto implementa:
-
-- **Conexión a Neo4j** usando el **Neo4j Java Driver**
-- **Importación de datos desde CSV** para crear nodos y relaciones
-- **Modelo de grafo** con nodos:
-  - `Track`
-  - `Artist`
-  - `Playlist`
-  - `Genre`
-- **Relaciones del grafo**:
-  - `(Track)-[:PERFORMED_BY]->(Artist)`
-  - `(Track)-[:PART_OF]->(Playlist)`
-  - `(Track)-[:HAS_GENRE]->(Genre)`
-  - `(Track)-[:SIMILAR_TO {weight}]->(Track)`
-- **Cálculo de similitud** por género y características numéricas (danceability, energy, popularity)
-- **Creación de índices** en Neo4j para optimizar operaciones
-- Manejo básico de errores con `try/catch` y cierre automático con `AutoCloseable`
+**Symphonix** es una plataforma integral de descubrimiento musical que combina una aplicación móvil en **Kotlin/Compose**, un backend en **Node.js** y una base de datos de grafos en **Neo4j**. El sistema permite gestionar preferencias musicales, analizar estados de ánimo y generar relaciones de similitud para ofrecer recomendaciones personalizadas mediante el uso de grafos.
 
 ---
 
-## Instalación de Neo4j (Link oficial + uso)
+## Descripción del Proyecto
 
-Para poder ejecutar Symphonix necesitas tener **Neo4j** instalado y corriendo localmente.
+Este proyecto implementa una solución de extremo a extremo:
+
+- **Frontend Móvil**: App nativa desarrollada con **Jetpack Compose** (Material 3) para descubrir música, gestionar favoritos y analizar métricas emocionales.
+- **Backend Serverless**: Funciones en **Firebase Functions** que ejecutan la lógica de negocio y algoritmos de recomendación.
+- **Modelo de Grafo (Neo4j)**:
+  - **Nodos**: `Track`, `Artist`, `Playlist`, `Genre`, `User`.
+  - **Relaciones**: 
+    - `(Track)-[:PERFORMED_BY]->(Artist)`
+    - `(Track)-[:HAS_GENRE]->(Genre)`
+    - `(User)-[:LIKES]->(Track)` (Sistema de favoritos sincronizado con el grafo)
+    - `(Track)-[:SIMILAR_TO {weight}]->(Track)` (Similitud por atributos de audio)
+- **Algoritmo de Recomendación**: Cálculo de proximidad basado en características numéricas (danceability, energy, valence, tempo).
+
+---
+
+## Instalación de Neo4j
+
+Para que Symphonix funcione, necesitas una instancia de Neo4j activa y configurada.
 
 ### Link oficial de descarga
-- **Neo4j Download (oficial):** https://neo4j.com/download/
+- **Neo4j Desktop (Recomendado):** [https://neo4j.com/download/](https://neo4j.com/download/)
 
-### ¿Cómo se usa para este proyecto?
-1. Entra al link y descarga **Neo4j Desktop** (recomendado porque es lo más sencillo para el curso).
-2. Instálalo y ábrelo.
-3. Crea una base de datos local (DBMS) y presiona **Start**.
-4. Abre **Neo4j Browser** (desde Neo4j Desktop).
-5. Verifica que la instancia esté escuchando en:
-   - `neo4j://127.0.0.1:7687`
-6. Ajusta las credenciales en `Main.java` si tu contraseña es distinta.
-
-> En este proyecto, Neo4j se usa como el motor de base de datos grafo donde se guardan los nodos (`Track`, `Artist`, `Genre`, `Playlist`) y las relaciones (`SIMILAR_TO`, etc.), para luego poder consultarlos con **Cypher** desde Neo4j Browser.
+### Configuración del entorno
+1. Descarga e instala **Neo4j Desktop**.
+2. Crea una base de datos local (DBMS) y presiona **Start**.
+3. Asegúrate de que la instancia esté escuchando en: `neo4j://127.0.0.1:7687`.
+4. El backend se conecta automáticamente usando las credenciales configuradas en `backend/functions/neo4j.js`.
 
 ---
 
 ## Vista del Grafo (Neo4j Browser)
 
-Al correr Symphonix e importar los datos, puedes visualizar el grafo en **Neo4j Browser**.
+Al interactuar con la aplicación, puedes visualizar las conexiones de tus canciones favoritas en tiempo real con esta consulta en **Neo4j Browser**:
 
-Consulta típica para ver conexiones:
-
-```cypher
-MATCH (n)-[r]->(m)
-RETURN n, r, m
-LIMIT 50
-```
-
-**Ejemplo de resultados (dataset de pruebas):**
-- **Nodos:** 42
-  - `Track`: 38
-  - `Artist`: 2
-  - `Genre`: 1
-  - `Playlist`: 1
-- **Relaciones:** 50
-  - `SIMILAR_TO`: 44
-  - `HAS_GENRE`: 2
-  - `PART_OF`: 2
-  - `PERFORMED_BY`: 2
-
-> Los números pueden variar si importas el dataset completo.
 
 ---
 
-## Estructura del Proyecto
+##  Estructura del Proyecto
 
-> **TRABAJAR SIEMPRE DESDE** la carpeta `demo/` (ahí vive el proyecto Maven).
-
-```
-Proyecto-2-Algoritmos/
-├── README.md
-├── demo/                              ← TRABAJAR SIEMPRE DESDE AQUÍ
-│   ├── pom.xml
-│   └── src/
-│       └── main/
-│           └── java/
-│               └── com/
-│                   └── proyecto/
-│                       ├── Main.java
-│                       └── Neo4jManager.java
-└── datos_grafos/
-    └── data/                          ← Archivos locales de Neo4j (generados por Neo4j)
-```
+El repositorio se organiza en los siguientes componentes principales:
+---
 
 ---
 
-## Requisitos
+## Requisitos y Tecnologías
 
-- **Java 17 o superior**
-- **Maven 3.6+**
-- **Neo4j Desktop o Neo4j Server** corriendo localmente
-
----
-
-## Tecnologías Utilizadas
-
-- **Java 17**
-- **Maven**
-- **Neo4j 5.x**
-- **Neo4j Java Driver**
+- **Android**: Java 17+, Android Studio Ladybug+, Firebase Auth & Functions.
+- **Backend**: Node.js 22+, Firebase CLI, NPM.
+- **Base de Datos**: Neo4j 5.x+, Cypher Query Language.
+- **Librerías Android**: Jetpack Compose, Coil (Imágenes), Navigation Compose.
 
 ---
 
-## Instalación del Proyecto
 
-### 1. Clonar el repositorio
-```bash
-git clone https://github.com/Nenerox/Proyecto-2-Algoritmos.git
-cd Proyecto-2-Algoritmos
-```
+### 2. Configuración de la App Android
+- Agrega tu archivo `google-services.json` en `android/frontend/app/`.
+- Sincroniza Gradle y ejecuta el proyecto en un emulador o dispositivo real.
 
-### 2. Compilar con Maven
-```bash
-cd demo
-mvn clean install
-```
+### 3. Importación de Datos (Java)
 
----
+## 🚀 Pasos para la Ejecución
 
-## Configuración de Neo4j (Credenciales)
-
-En `Main.java` están los datos de conexión:
-
-- URI: `neo4j://127.0.0.1:7687`
-- User: `neo4j`
-- Password: `algoritmos1234`
-
----
-
-## Archivos de Datos (CSV)
-
-- Dataset completo:
-  - `demo\src\main\java\com\proyecto\spotify_songs.csv`
-- Dataset de pruebas:
-  - `demo\src\main\java\com\proyecto\Data_Base_Pruebas.csv`
-
-Por defecto se importa el de **pruebas**:
-
-```java
-manager.importarDatos(rutaPruebas);
-```
-
----
-
-## Ejecución
-
-Compilar:
-```bash
-cd demo
-mvn clean install
-```
-
-Ejecutar (desde la raíz del repo):
-```bash
-cd ..
-java -cp demo/target/classes com.proyecto.Main
-```
-
----
-
+### 1. Desplegar el Backend
 ## Contribuyentes
 
 - **María Jimena Vásquez Meléndez** — 25092  
