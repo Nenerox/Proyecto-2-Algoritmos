@@ -60,7 +60,7 @@ exports.getDislikes = functions.https.onCall(async (request) => {
                 t.id AS id,
                 t.name AS name,
                 a.name AS artist,
-                t.album AS album,
+                t.album AS album
 
             ORDER BY r.createdAt DESC
             `,
