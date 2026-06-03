@@ -55,7 +55,7 @@ fun DislikeSongsScreen(
             .addOnSuccessListener { result ->
                 val data = result.data as? List<*>
                 if (data != null) {
-                    data.mapNotNull { item ->
+                    dislikedSongs = data.mapNotNull { item ->
                         val map = item as? Map<*, *> ?: return@mapNotNull null
 
                         DislikedSong(
