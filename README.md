@@ -60,15 +60,18 @@ El repositorio se organiza en los siguientes componentes principales:
 ---
 
 
+
+
+## Pasos para la Ejecución
+
+### 1. Desplegar el Backend
+
 ### 2. Configuración de la App Android
 - Agrega tu archivo `google-services.json` en `android/frontend/app/`.
 - Sincroniza Gradle y ejecuta el proyecto en un emulador o dispositivo real.
 
 ### 3. Importación de Datos (Java)
 
-## Pasos para la Ejecución
-
-### 1. Desplegar el Backend
 ## Contribuyentes
 
 - **María Jimena Vásquez Meléndez** — 25092  
